@@ -79,7 +79,7 @@
         import { getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         
         // !!! PASTE YOUR KEYS HERE !!!
-        firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyBnv-g-85KNpSmYG0ZN_tfHLR4DsXpDttc",
   authDomain: "attendance-gac-ngp.firebaseapp.com",
   projectId: "attendance-gac-ngp",
@@ -87,6 +87,9 @@
   messagingSenderId: "772470800474",
   appId: "1:772470800474:web:5bcf5808a57995a8991863"
 };
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);       
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
