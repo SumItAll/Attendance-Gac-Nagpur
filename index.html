@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GAC X-Dark Portal</title>
+    <title>GAC Nagpur Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -11,12 +11,12 @@
             theme: {
                 extend: {
                     colors: {
-                        // X-style dark mode palette
                         xbase: '#000000',
                         xpanel: '#16181c',
                         xlight: '#eff3f4',
                         xgray: '#71767b',
-                        xaccent: '#1d9bf0', // Twitter/X Blue for subtle accents
+                        xaccent: '#1d9bf0',
+                        xgold: '#f59e0b', // Ayurveda Gold
                     }
                 }
             }
@@ -26,7 +26,6 @@
         /* Base Dark Theme */
         body {
             background-color: #000000;
-            /* Subtle deep gradient to give the glass something to blur over */
             background-image: radial-gradient(circle at top right, rgba(29, 155, 240, 0.15), transparent 40%),
                               radial-gradient(circle at bottom left, rgba(255, 255, 255, 0.05), transparent 40%);
             min-height: 100vh;
@@ -34,12 +33,12 @@
             color: #eff3f4;
         }
 
-        /* Dark Glassmorphism Utility Classes */
+        /* Glass Panels */
         .glass-panel {
-            background-color: rgba(22, 24, 28, 0.65); /* Semi-transparent X panel color */
+            background-color: rgba(22, 24, 28, 0.65);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle light border */
+            border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
         }
         
@@ -49,13 +48,13 @@
             color: white;
         }
         .glass-input:focus {
-            border-color: #1d9bf0; /* X Blue focus */
+            border-color: #1d9bf0;
             background-color: rgba(0, 0, 0, 0.6);
         }
 
-        /* Buttons that pop */
+        /* Buttons */
         .btn-primary {
-            background-color: #eff3f4; /* High contrast white */
+            background-color: #eff3f4;
             color: black;
             font-weight: 700;
             transition: all 0.2s;
@@ -67,21 +66,16 @@
             color: #fca5a5;
             border: 1px solid rgba(239, 68, 68, 0.4);
         }
-        .btn-danger:hover { background-color: rgba(239, 68, 68, 0.3); }
-
         .glass-pill {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: #eff3f4;
         }
-        .glass-pill:hover { background: rgba(255, 255, 255, 0.2); }
 
-        /* Scrollbar styling for dark mode */
+        /* Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #16181c; }
         ::-webkit-scrollbar-thumb { background: #333639; rounded: 4px; }
-
-        /* Utilities */
         .hidden { display: none; }
     </style>
 </head>
@@ -89,78 +83,88 @@
 
     <div class="w-full max-w-md relative z-10">
         
-        <div id="auth-screen" class="glass-panel rounded-3xl p-8 mt-10">
-            <div class="text-center mb-8">
-                <div class="w-16 h-16 mx-auto flex items-center justify-center text-4xl mb-4">🌿</div>
-                <h2 class="text-3xl font-black tracking-tight">GAC Portal</h2>
-                <p class="text-xgray text-sm mt-2 font-medium">Sakkardara Attendance System</p>
+        <div id="auth-screen" class="glass-panel rounded-3xl p-8 mt-4">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 mx-auto flex items-center justify-center text-4xl mb-3">🌿</div>
+                
+                <h2 class="text-2xl font-black tracking-tight text-white uppercase">ATTENDANCE GAC-NAGPUR</h2>
+                
+                <div class="mt-3 p-3 bg-white/5 rounded-xl border border-white/10">
+                    <p class="text-xgold font-serif italic font-medium text-sm leading-relaxed">
+                        "प्रयोजनं चास्य स्वस्थस्य स्वास्थ्यरक्षणं<br>आतुरस्य विकारप्रशमनं च।"
+                    </p>
+                    <p class="text-[10px] text-xgray mt-1 uppercase tracking-widest">- Charaka Samhita</p>
+                </div>
             </div>
 
-            <div class="space-y-4">
-                <input type="email" id="email" placeholder="Email Address" class="glass-input w-full p-4 rounded-xl outline-none transition placeholder-gray-500">
-                <input type="password" id="password" placeholder="Password" class="glass-input w-full p-4 rounded-xl outline-none transition placeholder-gray-500">
-                
-                <button id="loginBtn" onclick="login()" class="w-full btn-primary p-4 rounded-full text-lg shadow-lg mt-6">
-                    Log In
-                </button>
+            <div class="flex gap-2 mb-6 p-1 bg-black/40 rounded-xl">
+                <button onclick="toggleAuth('login')" id="tab-login" class="flex-1 py-2 text-xs font-bold rounded-lg bg-white/10 text-white transition">LOGIN</button>
+                <button onclick="toggleAuth('register')" id="tab-register" class="flex-1 py-2 text-xs font-bold rounded-lg text-xgray hover:text-white transition">REGISTER</button>
             </div>
+
+            <div id="form-login" class="space-y-4">
+                <input type="email" id="l-email" placeholder="Email" class="glass-input w-full p-4 rounded-xl outline-none">
+                <input type="password" id="l-password" placeholder="Password" class="glass-input w-full p-4 rounded-xl outline-none">
+                <button id="loginBtn" onclick="login()" class="w-full btn-primary p-4 rounded-full text-lg shadow-lg mt-2">Log In</button>
+            </div>
+
+            <div id="form-register" class="space-y-4 hidden">
+                <input type="text" id="r-name" placeholder="Full Name (Student)" class="glass-input w-full p-4 rounded-xl outline-none border-l-4 border-l-xaccent">
+                <input type="email" id="r-email" placeholder="Email" class="glass-input w-full p-4 rounded-xl outline-none">
+                <input type="password" id="r-password" placeholder="Create Password (6+ chars)" class="glass-input w-full p-4 rounded-xl outline-none">
+                <button id="regBtn" onclick="register()" class="w-full bg-xaccent hover:bg-blue-400 text-white font-bold p-4 rounded-full text-lg shadow-lg mt-2">Create Account</button>
+            </div>
+            
+            <p id="auth-msg" class="text-center text-xs text-red-400 mt-4 h-4"></p>
         </div>
 
         <div id="admin-dashboard" class="hidden glass-panel rounded-3xl p-6">
-            <div class="flex items-center justify-between mb-6 border-b border-white/10 pb-4">
-                <h1 class="text-xl font-bold text-red-400">🛡️ Admin Control</h1>
-            </div>
-            
+            <h1 class="text-xl font-bold text-red-400 mb-4 border-b border-white/10 pb-2">🛡️ Admin Panel</h1>
             <div class="glass-input p-5 rounded-2xl mb-4 border-red-500/20">
-                <h2 class="font-bold mb-2 text-lg">Database Cleanup</h2>
-                <p class="text-xgray text-sm mb-4">Remove old photo records to save space.</p>
-                <button onclick="cleanOldData()" id="btn-purge" class="w-full btn-danger p-3 rounded-xl font-bold transition flex items-center justify-center gap-2">
-                    🗑️ Auto-Clean (> 45 Days)
+                <h2 class="font-bold mb-2">Maintenance</h2>
+                <button onclick="cleanOldData()" id="btn-purge" class="w-full btn-danger p-3 rounded-xl font-bold transition">
+                    🗑️ Clean Data (> 45 Days)
                 </button>
-                <p id="admin-log" class="text-xs mt-3 text-xgray font-mono text-center"></p>
             </div>
-            <button onclick="logout()" class="w-full glass-pill p-3 rounded-full mt-4 font-bold">Logout</button>
+            <button onclick="logout()" class="w-full glass-pill p-3 rounded-full font-bold">Logout</button>
         </div>
 
         <div id="student-dashboard" class="hidden">
             <div class="glass-panel rounded-3xl p-6 mb-4 flex items-center justify-between">
                 <div>
-                    <p class="text-xs text-xgray uppercase tracking-wider font-bold">Welcome Back</p>
-                    <h1 class="text-2xl font-black leading-tight" id="st-name">Student</h1>
+                    <p class="text-xs text-xgray uppercase font-bold">Welcome</p>
+                    <h1 class="text-xl font-black" id="st-name">Student</h1>
                 </div>
-                <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-xl border border-white/20">🎓</div>
+                <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-white/20">🎓</div>
             </div>
 
             <div id="distance-radar" class="glass-panel rounded-3xl p-5 mb-4 text-center hidden border-xaccent/30">
-                <p class="text-[10px] uppercase tracking-[0.2em] text-xaccent font-bold mb-2">LIVE GPS RADAR</p>
+                <p class="text-[10px] uppercase tracking-widest text-xaccent font-bold mb-2">LIVE GPS RADAR</p>
                 <div class="flex items-baseline justify-center gap-1">
-                    <span id="live-range-text" class="text-4xl font-black tracking-tighter">...</span>
-                    <span class="text-xl font-bold text-xgray">meters</span>
+                    <span id="live-range-text" class="text-4xl font-black">...</span>
+                    <span class="text-xl font-bold text-xgray">m</span>
                 </div>
                 <div class="flex items-center justify-center gap-2 mt-3">
                     <div id="radar-dot" class="w-2.5 h-2.5 rounded-full bg-gray-600"></div>
-                    <p id="range-status" class="text-sm font-medium text-xgray">Acquiring signal...</p>
+                    <p id="range-status" class="text-xs font-medium text-xgray">Acquiring signal...</p>
                 </div>
             </div>
 
             <div class="glass-panel rounded-3xl p-6">
-                <h2 class="text-lg font-bold mb-4 text-xlight">Class Status</h2>
+                <h2 class="text-lg font-bold mb-4 text-xlight">Current Class</h2>
                 
                 <div id="active-session-box" class="hidden">
                     <div class="bg-emerald-500/10 border border-emerald-500/30 p-5 rounded-2xl mb-5 text-center relative overflow-hidden">
                         <div class="absolute top-0 left-0 w-full h-1 bg-emerald-500 animate-pulse"></div>
-                        <p class="text-emerald-400 font-black text-xl mb-1 tracking-tight" id="session-subject">...</p>
-                        <p class="text-xs text-emerald-300/70 uppercase font-bold tracking-wider">Session is Live</p>
+                        <p class="text-emerald-400 font-black text-xl mb-1" id="session-subject">...</p>
+                        <p class="text-xs text-emerald-300/70 uppercase font-bold">Live Session</p>
                     </div>
-                    
-                    <button onclick="markAttendance()" id="markBtn" class="w-full btn-primary p-4 rounded-full font-bold shadow-lg flex items-center justify-center gap-2">
-                        📸 Verify & Mark Present
-                    </button>
+                    <button onclick="markAttendance()" id="markBtn" class="w-full btn-primary p-4 rounded-full font-bold shadow-lg">📸 Mark Present</button>
                 </div>
 
-                <div id="no-session-msg" class="text-center py-10 border-2 border-dashed border-white/10 rounded-2xl">
-                    <p class="text-xgray font-medium">No active classes detected.</p>
-                    <button onclick="checkForActiveSessions()" class="text-xaccent text-sm mt-3 font-bold hover:underline">Refresh Status</button>
+                <div id="no-session-msg" class="text-center py-8 border-2 border-dashed border-white/10 rounded-2xl">
+                    <p class="text-xgray text-sm">No active classes.</p>
+                    <button onclick="checkForActiveSessions()" class="text-xaccent text-xs mt-2 font-bold uppercase">Refresh</button>
                 </div>
             </div>
             <button onclick="logout()" class="w-full glass-pill p-3 rounded-full mt-6 font-bold">Logout</button>
@@ -168,91 +172,61 @@
 
         <div id="teacher-dashboard" class="hidden">
             <div class="glass-panel rounded-3xl p-6 mb-4 border-l-4 border-xaccent">
-                <h1 class="text-2xl font-black">👩‍🏫 Teacher Portal</h1>
-                <p class="text-sm text-xgray font-medium mt-1">Classroom Control Center</p>
+                <h1 class="text-2xl font-black">👩‍🏫 Teacher</h1>
             </div>
 
             <div class="glass-panel rounded-3xl p-6 mb-6">
-                <h2 class="font-bold mb-4 text-lg border-b border-white/10 pb-3">⏱️ Session Control</h2>
-                
+                <h2 class="font-bold mb-4 text-lg border-b border-white/10 pb-2">⏱️ Control</h2>
                 <div id="start-controls">
                     <div class="space-y-3 mb-5">
-                        <div>
-                            <label class="text-xs text-xgray font-bold ml-2 uppercase">Subject</label>
-                            <select id="t-subject" class="glass-input w-full p-3 rounded-xl mt-1 cursor-pointer">
-                                <option class="bg-xpanel">Agadtantra</option>
-                                <option class="bg-xpanel">Swasthavritta</option>
-                                <option class="bg-xpanel">Samhita-II</option>
-                                <option class="bg-xpanel">Rog Nidan</option>
-                                <option class="bg-xpanel">Dravyaguna</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-xs text-xgray font-bold ml-2 uppercase">Duration</label>
-                            <select id="t-duration" class="glass-input w-full p-3 rounded-xl mt-1 cursor-pointer">
-                                <option class="bg-xpanel" value="5">5 Minutes</option>
-                                <option class="bg-xpanel" value="10">10 Minutes</option>
-                                <option class="bg-xpanel" value="60">1 Hour</option>
-                            </select>
-                        </div>
+                        <select id="t-subject" class="glass-input w-full p-3 rounded-xl cursor-pointer">
+                            <option class="bg-xpanel">Agadtantra</option>
+                            <option class="bg-xpanel">Swasthavritta</option>
+                            <option class="bg-xpanel">Samhita-II</option>
+                            <option class="bg-xpanel">Rog Nidan</option>
+                            <option class="bg-xpanel">Dravyaguna</option>
+                        </select>
+                        <select id="t-duration" class="glass-input w-full p-3 rounded-xl cursor-pointer">
+                            <option class="bg-xpanel" value="5">5 Minutes</option>
+                            <option class="bg-xpanel" value="10">10 Minutes</option>
+                            <option class="bg-xpanel" value="60">1 Hour</option>
+                        </select>
                     </div>
-                    <button onclick="createSession()" class="w-full btn-primary p-3 rounded-full font-bold">
-                        Start Class 🚀
-                    </button>
+                    <button onclick="createSession()" class="w-full btn-primary p-3 rounded-full font-bold">Start Class</button>
                 </div>
-
                 <div id="cancel-controls" class="hidden">
-                    <div class="bg-emerald-500/10 border border-emerald-500/30 p-4 rounded-2xl mb-4 text-center">
-                        <p class="font-black text-emerald-400 text-lg">✅ Session is Live</p>
-                        <p class="text-xs text-emerald-300/70">Accepting attendance...</p>
-                    </div>
-                    <button onclick="cancelSession()" class="w-full btn-danger p-3 rounded-full font-bold flex items-center justify-center gap-2">
-                        ⛔ End Session Instantly
-                    </button>
+                    <button onclick="cancelSession()" class="w-full btn-danger p-3 rounded-full font-bold">⛔ End Session</button>
                 </div>
             </div>
 
             <div class="glass-panel rounded-3xl p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="font-bold text-lg">📄 Records Book</h2>
+                <h2 class="font-bold text-lg mb-4">📄 Records</h2>
+                <div class="flex gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar">
+                    <button onclick="filterHistory('today')" class="glass-pill px-4 py-2 rounded-full text-xs font-bold">Today</button>
+                    <button onclick="filterHistory('week')" class="glass-pill px-4 py-2 rounded-full text-xs font-bold">Week</button>
+                    <button onclick="loadHistory()" class="glass-pill px-4 py-2 rounded-full text-xs font-bold bg-white/10">All</button>
                 </div>
-                
-                <div class="flex gap-2 mb-5 overflow-x-auto pb-2 no-scrollbar">
-                    <button onclick="filterHistory('today')" class="glass-pill px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition active:scale-95">Today</button>
-                    <button onclick="filterHistory('week')" class="glass-pill px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition active:scale-95">This Week</button>
-                    <button onclick="filterHistory('month')" class="glass-pill px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition active:scale-95">This Month</button>
-                    <button onclick="loadHistory()" class="glass-pill px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition active:scale-95 bg-white/10">All</button>
-                </div>
-                
-                <div id="history-list" class="space-y-3 max-h-72 overflow-y-auto pr-1">
-                    <p class="text-center text-xgray text-sm py-6">Select a filter above to view records.</p>
-                </div>
+                <div id="history-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
             </div>
-
-            <div id="report-view" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-end sm:items-center justify-center sm:p-4">
-                <div class="glass-panel w-full max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl border-t border-white/20 sm:border">
-                    <div class="p-5 border-b border-white/10 flex justify-between items-center">
-                        <h3 class="font-black text-xl text-white" id="report-title">Attendance List</h3>
-                        <button onclick="closeReport()" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition">✕</button>
+            
+            <div id="report-view" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4">
+                <div class="glass-panel w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl border border-white/20">
+                    <div class="p-4 border-b border-white/10 flex justify-between items-center">
+                        <h3 class="font-bold text-white" id="report-title">List</h3>
+                        <button onclick="closeReport()" class="w-8 h-8 rounded-full bg-white/10">✕</button>
                     </div>
-                    <div class="max-h-[70vh] overflow-y-auto p-2">
+                    <div class="max-h-96 overflow-y-auto p-2">
                         <table class="w-full text-sm text-left text-xgray">
-                            <thead class="text-xs text-white uppercase font-bold border-b border-white/10">
-                                <tr>
-                                    <th class="px-4 py-3">Photo</th>
-                                    <th class="px-4 py-3">Student Name</th>
-                                    <th class="px-4 py-3 text-right">Time</th>
-                                </tr>
+                            <thead class="text-xs text-white uppercase border-b border-white/10">
+                                <tr><th class="p-3">Photo</th><th class="p-3">Name</th><th class="p-3 text-right">Time</th></tr>
                             </thead>
                             <tbody id="report-body" class="divide-y divide-white/5"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
-
             <button onclick="logout()" class="w-full glass-pill p-3 rounded-full mt-6 font-bold">Logout</button>
         </div>
-
     </div>
 
     <input type="file" id="cameraInput" accept="image/*" capture="user" class="hidden" onchange="processPhoto()">
@@ -260,15 +234,15 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs, deleteDoc, orderBy, Timestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // GLOBAL VARS
         let auth, db, currentUserName = "";
         window.activeSessionId = null;
         let watchId = null; 
 
-        // --- 🔑 YOUR FIREBASE KEYS ARE HERE ---
+        // --- 🔑 KEYS PRE-INSTALLED ---
         const firebaseConfig = {
             apiKey: "AIzaSyBnv-g-85KNpSmYG0ZN_tfHLR4DsXpDttc",
             authDomain: "attendance-gac-ngp.firebaseapp.com",
@@ -284,20 +258,84 @@
             db = getFirestore(app);
         } catch (e) { console.error(e); }
 
-        // --- AUTH ---
+        // --- AUTH & REGISTER LOGIC ---
+        window.toggleAuth = (mode) => {
+            const loginForm = document.getElementById("form-login");
+            const regForm = document.getElementById("form-register");
+            const tabLogin = document.getElementById("tab-login");
+            const tabReg = document.getElementById("tab-register");
+            document.getElementById("auth-msg").innerText = "";
+
+            if (mode === 'login') {
+                loginForm.classList.remove("hidden");
+                regForm.classList.add("hidden");
+                tabLogin.classList.add("bg-white/10", "text-white");
+                tabLogin.classList.remove("text-xgray");
+                tabReg.classList.remove("bg-white/10", "text-white");
+                tabReg.classList.add("text-xgray");
+            } else {
+                loginForm.classList.add("hidden");
+                regForm.classList.remove("hidden");
+                tabReg.classList.add("bg-white/10", "text-white");
+                tabReg.classList.remove("text-xgray");
+                tabLogin.classList.remove("bg-white/10", "text-white");
+                tabLogin.classList.add("text-xgray");
+            }
+        };
+
         window.login = () => {
-            const e = document.getElementById("email").value;
-            const p = document.getElementById("password").value;
+            const e = document.getElementById("l-email").value;
+            const p = document.getElementById("l-password").value;
             const btn = document.getElementById("loginBtn");
-            const originalText = btn.innerText;
+            const msg = document.getElementById("auth-msg");
+            
+            if(!e || !p) { msg.innerText = "Please enter email and password"; return; }
+            
             btn.innerText = "Verifying...";
             btn.disabled = true;
             signInWithEmailAndPassword(auth, e, p).catch(err => {
-                alert(err.message);
-                btn.innerText = originalText;
+                msg.innerText = "Login Failed: " + err.code.replace("auth/", "");
+                btn.innerText = "Log In";
                 btn.disabled = false;
             });
         };
+
+        // NEW REGISTER FUNCTION
+        window.register = async () => {
+            const name = document.getElementById("r-name").value;
+            const email = document.getElementById("r-email").value;
+            const pass = document.getElementById("r-password").value;
+            const btn = document.getElementById("regBtn");
+            const msg = document.getElementById("auth-msg");
+
+            if(!name || !email || !pass) { msg.innerText = "All fields are required"; return; }
+            if(pass.length < 6) { msg.innerText = "Password must be 6+ characters"; return; }
+
+            btn.innerText = "Creating Account...";
+            btn.disabled = true;
+
+            try {
+                // 1. Create Auth User
+                const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+                const user = userCredential.user;
+
+                // 2. Create Database Profile (Student Role Default)
+                await setDoc(doc(db, "users", user.uid), {
+                    name: name,
+                    email: email,
+                    role: "student",
+                    createdAt: new Date()
+                });
+
+                // 3. Success (Auto-login happens by default)
+                msg.innerText = "✅ Success! Logging in...";
+            } catch (error) {
+                msg.innerText = "Error: " + error.message;
+                btn.innerText = "Create Account";
+                btn.disabled = false;
+            }
+        };
+
         window.logout = () => signOut(auth).then(() => location.reload());
 
         onAuthStateChanged(auth, async (user) => {
@@ -323,70 +361,59 @@
             }
         });
 
-        // --- 📡 LIVE RANGE TELLER (UPDATED UI) ---
+        // --- GPS & ATTENDANCE ---
         function startLiveRangeTeller() {
             if (navigator.geolocation) {
                 document.getElementById("distance-radar").classList.remove("hidden");
-                
                 watchId = navigator.geolocation.watchPosition((pos) => {
                     const collegeLat = 21.126222; 
                     const collegeLng = 79.115222;
                     const d = getDistanceFromLatLonInM(pos.coords.latitude, pos.coords.longitude, collegeLat, collegeLng);
-                    
-                    const distText = Math.round(d);
                     const rangeEl = document.getElementById("live-range-text");
                     const dot = document.getElementById("radar-dot");
                     const status = document.getElementById("range-status");
-
-                    rangeEl.innerText = distText;
+                    rangeEl.innerText = Math.round(d);
 
                     if (d < 50) {
-                        // INSIDE RANGE (Green/Accent)
                         rangeEl.style.color = "#4ade80";
                         dot.className = "w-2.5 h-2.5 rounded-full bg-green-500 animate-ping";
-                        status.innerText = "✅ Ready to mark attendance";
+                        status.innerText = "✅ In Range";
                         status.style.color = "#4ade80";
                     } else {
-                        // OUTSIDE RANGE (Gray/Red)
                         rangeEl.style.color = "#eff3f4";
                         dot.className = "w-2.5 h-2.5 rounded-full bg-red-500";
-                        status.innerText = `❌ Move ${Math.round(d - 50)}m closer to department`;
+                        status.innerText = `❌ Move ${Math.round(d - 50)}m closer`;
                         status.style.color = "#71767b";
                     }
-
-                }, (err) => { console.log("GPS Error"); }, { enableHighAccuracy: true, maximumAge: 10000 });
+                }, null, { enableHighAccuracy: true });
             }
         }
 
-        // --- STUDENT ATTENDANCE ---
         window.markAttendance = () => {
              if (navigator.geolocation) {
                 const btn = document.getElementById("markBtn");
-                btn.innerText = "📍 Verifying Exact Location...";
+                btn.innerText = "📍 Verifying...";
                 btn.disabled = true;
                 navigator.geolocation.getCurrentPosition((pos) => {
                     const collegeLat = 21.126222; 
                     const collegeLng = 79.115222;
                     const d = getDistanceFromLatLonInM(pos.coords.latitude, pos.coords.longitude, collegeLat, collegeLng);
-                    
                     if (d < 50) { 
                         document.getElementById("cameraInput").click();
                         btn.innerText = "📸 Opening Camera...";
                     } else { 
-                        alert(`❌ Access Denied.\n\nYou are ${Math.round(d)}m away. Limit is 50m.`);
-                        btn.innerText = "📸 Verify & Mark Present";
+                        alert(`❌ Too Far! (${Math.round(d)}m). Go to Dept.`);
+                        btn.innerText = "📸 Mark Present";
                         btn.disabled = false;
                     }
-                }, (err) => { alert("GPS Error: " + err.message); btn.disabled = false; btn.innerText = "Retry"; }, {enableHighAccuracy:true});
+                }, (err) => { alert("GPS Error: " + err.message); btn.disabled = false; }, {enableHighAccuracy:true});
             } else { alert("GPS not supported"); }
         };
 
         window.processPhoto = () => {
             const file = document.getElementById("cameraInput").files[0];
             if (!file) return;
-            // Show loading state on button
-            document.getElementById("markBtn").innerText = "⏳ Compressing & Submitting...";
-            
+            document.getElementById("markBtn").innerText = "⏳ Uploading...";
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = (e) => {
@@ -414,21 +441,18 @@
                 timestamp: new Date(),
                 status: "Present"
             });
-            // Success feedback without reload for smoother feel
             const btn = document.getElementById("markBtn");
-            btn.innerText = "✅ Attendance Marked!";
-            btn.classList.remove("bg-white", "text-black");
-            btn.classList.add("bg-green-500", "text-white");
+            btn.innerText = "✅ Done!";
+            btn.classList.replace("btn-primary", "bg-green-500");
             setTimeout(() => location.reload(), 1500);
         }
 
-        // --- TEACHER LOGIC ---
+        // --- TEACHER ---
         window.createSession = async () => {
             const subject = document.getElementById("t-subject").value;
             const duration = parseInt(document.getElementById("t-duration").value);
             const endTime = new Date();
             endTime.setMinutes(endTime.getMinutes() + duration);
-
             const docRef = await addDoc(collection(db, "sessions"), {
                 teacherId: auth.currentUser.uid,
                 subject: subject,
@@ -442,7 +466,7 @@
         };
 
         window.cancelSession = async () => {
-            if(confirm("End this session immediately?")) {
+            if(confirm("End Session?")) {
                 if(window.currentSessionId) {
                     await deleteDoc(doc(db, "sessions", window.currentSessionId));
                     document.getElementById("start-controls").classList.remove("hidden");
@@ -451,19 +475,14 @@
             }
         };
 
-        // --- SYSTEMATIC RECORDS (X Style Update) ---
         window.filterHistory = async (filterType) => {
             const list = document.getElementById("history-list");
-            list.innerHTML = `<div class="flex justify-center p-4"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div></div>`;
-            
+            list.innerHTML = `<div class="p-2 text-center text-xs">Loading...</div>`;
             const q = query(collection(db, "sessions"), where("teacherId", "==", auth.currentUser.uid));
             const snapshot = await getDocs(q);
-            
             const now = new Date();
             const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
-            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
             let records = [];
             snapshot.forEach(doc => {
                 const data = doc.data();
@@ -471,36 +490,17 @@
                 data.id = doc.id;
                 if (filterType === 'today' && sDate >= startOfDay) records.push(data);
                 else if (filterType === 'week' && sDate >= startOfWeek) records.push(data);
-                else if (filterType === 'month' && sDate >= startOfMonth) records.push(data);
                 else if (!filterType) records.push(data);
             });
-
             records.sort((a, b) => b.startTime.toDate() - a.startTime.toDate());
-
             list.innerHTML = "";
-            if(records.length === 0) {
-                list.innerHTML = `<p class="text-center text-xgray text-sm py-6 font-medium">No records found for this period.</p>`;
-                return;
-            }
-
+            if(records.length === 0) list.innerHTML = `<p class="text-center text-xs text-xgray py-2">No classes found.</p>`;
             records.forEach(data => {
-                const dateObj = data.startTime.toDate();
-                const dateStr = dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
-                const timeStr = dateObj.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-                
+                const dateStr = data.startTime.toDate().toLocaleDateString(undefined, {month:'short', day:'numeric'});
+                const timeStr = data.startTime.toDate().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
                 const div = document.createElement("div");
-                // X style list item
-                div.className = "glass-input p-4 rounded-2xl cursor-pointer transition hover:bg-white/5 flex justify-between items-center active:scale-[0.98]";
-                div.innerHTML = `
-                    <div class="flex items-center gap-4">
-                        <div class="h-10 w-10 rounded-full bg-xaccent/20 flex items-center justify-center text-xaccent">📚</div>
-                        <div>
-                            <p class="font-black text-base text-white leading-none">${data.subject}</p>
-                            <p class="text-xs text-xgray mt-1 font-medium">${dateStr} • ${timeStr}</p>
-                        </div>
-                    </div>
-                    <span class="text-xgray">→</span>
-                `;
+                div.className = "glass-input p-3 rounded-xl cursor-pointer hover:bg-white/5 flex justify-between items-center";
+                div.innerHTML = `<div class="text-sm"><p class="font-bold text-white">${data.subject}</p><p class="text-xs text-xgray">${dateStr} • ${timeStr}</p></div><span>👉</span>`;
                 div.onclick = () => showReport(data.id, data.subject);
                 list.appendChild(div);
             });
@@ -511,30 +511,15 @@
             document.getElementById("report-view").classList.remove("hidden");
             document.getElementById("report-title").innerText = subject;
             const tbody = document.getElementById("report-body");
-            tbody.innerHTML = "<tr><td colspan='3' class='text-center p-6 text-xgray'>Loading data...</td></tr>";
-
+            tbody.innerHTML = "<tr><td colspan='3' class='text-center p-4 text-xs'>Loading...</td></tr>";
             const q = query(collection(db, "submissions"), where("sessionId", "==", sessionId));
             const snapshot = await getDocs(q);
-
             tbody.innerHTML = "";
-            if(snapshot.empty) {
-                tbody.innerHTML = "<tr><td colspan='3' class='p-8 text-center text-xgray font-medium'>No students attended this class.</td></tr>";
-                return;
-            }
-
+            if(snapshot.empty) { tbody.innerHTML = "<tr><td colspan='3' class='p-4 text-center text-xs'>No data.</td></tr>"; return; }
             snapshot.forEach(doc => {
                 const data = doc.data();
                 const time = data.timestamp.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                const row = `
-                    <tr class="border-b border-white/5 hover:bg-white/5 transition">
-                        <td class="px-4 py-3">
-                            <img src="${data.photoBase64}" class="w-10 h-10 rounded-full border-2 border-xpanel object-cover" onclick="window.open(this.src)">
-                        </td>
-                        <td class="px-4 py-3 font-bold text-white">${data.studentName || "Student"}</td>
-                        <td class="px-4 py-3 text-right text-xgray font-mono text-xs">${time}</td>
-                    </tr>
-                `;
-                tbody.innerHTML += row;
+                tbody.innerHTML += `<tr class="border-b border-white/5"><td class="p-3"><img src="${data.photoBase64}" class="w-8 h-8 rounded-full border border-white/20 object-cover" onclick="window.open(this.src)"></td><td class="p-3 font-bold">${data.studentName}</td><td class="p-3 text-right text-xs">${time}</td></tr>`;
             });
         };
         window.closeReport = () => document.getElementById("report-view").classList.add("hidden");
@@ -554,20 +539,16 @@
                 }
             });
         };
-        
         window.cleanOldData = async () => {
             const btn = document.getElementById("btn-purge");
-            btn.innerHTML = "Processing... ⏳";
-            btn.disabled = true;
+            btn.innerHTML = "Processing...";
             const cutoff = new Date();
             cutoff.setDate(cutoff.getDate() - 45); 
             const q = query(collection(db, "submissions"), where("timestamp", "<", cutoff));
             const snapshot = await getDocs(q);
             snapshot.forEach(async (d) => await deleteDoc(d.ref));
             btn.innerHTML = "Done ✅";
-            setTimeout(() => { btn.innerHTML = "🗑️ Auto-Clean (> 45 Days)"; btn.disabled = false; }, 2000);
         };
-
         function getDistanceFromLatLonInM(lat1, lon1, lat2, lon2) {
             var R = 6371e3; var dLat = (lat2-lat1) * Math.PI/180; var dLon = (lon2-lon1) * Math.PI/180; 
             var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLon/2) * Math.sin(dLon/2); 
