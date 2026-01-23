@@ -10,40 +10,32 @@
 <body class="p-4 max-w-lg mx-auto">
 
     <div id="auth-screen" class="bg-white p-6 rounded-lg shadow-lg mt-10">
-        <h2 class="text-2xl font-bold text-center text-red-600 mb-4">🔧 DEBUG MODE</h2>
-        <p class="text-center text-gray-500 mb-4 text-sm">If you click Login and nothing happens, check your API Keys below.</p>
+        <h2 class="text-2xl font-bold text-center text-red-600 mb-4">🔧 DEBUG MODE V2</h2>
         
         <input type="email" id="email" placeholder="Email" class="w-full p-2 border rounded mb-2">
         <input type="password" id="password" placeholder="Password" class="w-full p-2 border rounded mb-4">
         
         <button id="loginBtn" onclick="tryLogin()" class="w-full bg-red-600 text-white p-2 rounded font-bold">Try Login</button>
         
-        <div id="error-box" class="mt-4 p-2 bg-black text-green-400 font-mono text-xs rounded hidden">
-            Waiting for errors...
-        </div>
+        <div id="error-box" class="mt-4 p-2 bg-black text-green-400 font-mono text-xs rounded hidden"></div>
     </div>
 
     <div id="student-dashboard" class="hidden"><h1 class="text-2xl">👨‍🎓 Student: <span id="st-name"></span></h1></div>
-
     <div id="admin-dashboard" class="hidden"><h1 class="text-2xl text-red-600">🛡️ Admin Panel Active</h1></div>
 
     <script type="module">
-        // ERROR TRAPPING
-        window.onerror = function(message, source, lineno, colno, error) {
-            alert("CRITICAL ERROR:\n" + message);
-            document.getElementById("error-box").classList.remove("hidden");
-            document.getElementById("error-box").innerText = "Error on Line " + lineno + ": " + message;
-        };
+        // GLOBAL VARIABLES (Accessible everywhere)
+        let auth, db;
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // ---------------------------------------------------------
-        // PASTE YOUR KEYS CAREFULLY BETWEEN THE BRACKETS
+        // PASTE YOUR KEYS CAREFULLY HERE
         // ---------------------------------------------------------
         const firebaseConfig = {
-          apiKey: "AIzaSyBnv-g-85KNpSmYG0ZN_tfHLR4DsXpDttc",
+            apiKey: "AIzaSyBnv-g-85KNpSmYG0ZN_tfHLR4DsXpDttc",
   authDomain: "attendance-gac-ngp.firebaseapp.com",
   projectId: "attendance-gac-ngp",
   storageBucket: "attendance-gac-ngp.firebasestorage.app",
@@ -54,17 +46,19 @@
 
         try {
             const app = initializeApp(firebaseConfig);
-            const auth = getAuth(app);
-            const db = getFirestore(app);
+            // Assigning to the global variables
+            auth = getAuth(app);
+            db = getFirestore(app);
             console.log("Firebase initialized successfully");
         } catch (e) {
-            alert("FIREBASE CONFIG ERROR: Did you paste your keys? \n" + e.message);
+            alert("FIREBASE CONFIG ERROR:\n" + e.message);
         }
 
         window.tryLogin = () => {
             const e = document.getElementById("email").value;
             const p = document.getElementById("password").value;
             
+            if(!auth) { alert("Error: Firebase not loaded. Check API Keys."); return; }
             if(!e || !p) { alert("Please enter email and password"); return; }
             
             document.getElementById("loginBtn").innerText = "Logging in...";
@@ -79,28 +73,32 @@
             });
         };
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                try {
-                    const userDoc = await getDoc(doc(db, "users", user.uid));
-                    if (userDoc.exists()) {
-                        const data = userDoc.data();
-                        alert("Database Connected! Role: " + data.role);
-                        document.getElementById("auth-screen").classList.add("hidden");
-                        if(data.role === "student") {
-                            document.getElementById("student-dashboard").classList.remove("hidden");
-                            document.getElementById("st-name").innerText = data.name;
-                        } else if (data.role === "admin") {
-                            document.getElementById("admin-dashboard").classList.remove("hidden");
+        // Listen for login state
+        if(auth) {
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    try {
+                        const userDoc = await getDoc(doc(db, "users", user.uid));
+                        if (userDoc.exists()) {
+                            const data = userDoc.data();
+                            alert("✅ SUCCESS! Role: " + data.role);
+                            
+                            document.getElementById("auth-screen").classList.add("hidden");
+                            if(data.role === "student") {
+                                document.getElementById("student-dashboard").classList.remove("hidden");
+                                document.getElementById("st-name").innerText = data.name;
+                            } else if (data.role === "admin") {
+                                document.getElementById("admin-dashboard").classList.remove("hidden");
+                            }
+                        } else {
+                            alert("Login worked, but User Profile is missing in 'users' collection.");
                         }
-                    } else {
-                        alert("Login worked, but User Profile is missing in Database.");
+                    } catch(err) {
+                        alert("DATABASE ERROR:\n" + err.message);
                     }
-                } catch(err) {
-                    alert("DATABASE ERROR:\n" + err.message);
                 }
-            }
-        });
+            });
+        }
     </script>
 </body>
 </html>
