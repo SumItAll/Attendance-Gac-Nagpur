@@ -60,12 +60,15 @@
         
         <div id="auth-screen" class="glass-panel rounded-3xl p-8 mt-4">
             <div class="text-center mb-6">
-                <div class="w-16 h-16 mx-auto flex items-center justify-center text-4xl mb-3">🌿</div>
+                <div class="flex justify-center mb-4">
+                    <img src="https://i.imgur.com/8Q6Z0lR.png" alt="GAC Nagpur Logo" class="w-24 h-auto drop-shadow-lg">
+                </div>
                 <h2 class="text-2xl font-black tracking-tight text-white uppercase">ATTENDANCE GAC-NAGPUR</h2>
                 <div class="mt-3 p-3 bg-white/5 rounded-xl border border-white/10">
                     <p class="text-xgold font-serif italic font-medium text-sm leading-relaxed">
                         "प्रयोजनं चास्य स्वस्थस्य स्वास्थ्यरक्षणं<br>आतुरस्य विकारप्रशमनं च।"
                     </p>
+                    <p class="text-[10px] text-xgray mt-1 uppercase tracking-widest">- Charaka Samhita</p>
                 </div>
             </div>
 
@@ -219,6 +222,10 @@
             </div>
             <button onclick="logout()" class="w-full glass-pill p-3 rounded-full mt-6 font-bold">Logout</button>
         </div>
+    </div>
+    
+    <div class="fixed bottom-4 w-full text-center pointer-events-none z-0">
+        <p class="text-[10px] text-white/20 font-mono tracking-widest uppercase">© 2026 Sumit Jha. All Rights Reserved.</p>
     </div>
 
     <input type="file" id="cameraInput" accept="image/*" capture="user" class="hidden" onchange="processPhoto()">
