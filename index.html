@@ -16,14 +16,13 @@
                         xlight: '#eff3f4',
                         xgray: '#71767b',
                         xaccent: '#1d9bf0',
-                        xgold: '#f59e0b', // Ayurveda Gold
+                        xgold: '#f59e0b',
                     }
                 }
             }
         }
     </script>
     <style>
-        /* Base Dark Theme */
         body {
             background-color: #000000;
             background-image: radial-gradient(circle at top right, rgba(29, 155, 240, 0.15), transparent 40%),
@@ -32,8 +31,6 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: #eff3f4;
         }
-
-        /* Glass Panels */
         .glass-panel {
             background-color: rgba(22, 24, 28, 0.65);
             backdrop-filter: blur(16px);
@@ -41,38 +38,16 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
         }
-        
         .glass-input {
             background-color: rgba(0, 0, 0, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.15);
             color: white;
         }
-        .glass-input:focus {
-            border-color: #1d9bf0;
-            background-color: rgba(0, 0, 0, 0.6);
-        }
-
-        /* Buttons */
-        .btn-primary {
-            background-color: #eff3f4;
-            color: black;
-            font-weight: 700;
-            transition: all 0.2s;
-        }
+        .glass-input:focus { border-color: #1d9bf0; background-color: rgba(0, 0, 0, 0.6); }
+        .btn-primary { background-color: #eff3f4; color: black; font-weight: 700; transition: all 0.2s; }
         .btn-primary:hover { background-color: #d7dbdc; }
-
-        .btn-danger {
-            background-color: rgba(239, 68, 68, 0.2);
-            color: #fca5a5;
-            border: 1px solid rgba(239, 68, 68, 0.4);
-        }
-        .glass-pill {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #eff3f4;
-        }
-
-        /* Scrollbar */
+        .btn-danger { background-color: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
+        .glass-pill { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.1); color: #eff3f4; }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #16181c; }
         ::-webkit-scrollbar-thumb { background: #333639; rounded: 4px; }
@@ -86,14 +61,11 @@
         <div id="auth-screen" class="glass-panel rounded-3xl p-8 mt-4">
             <div class="text-center mb-6">
                 <div class="w-16 h-16 mx-auto flex items-center justify-center text-4xl mb-3">🌿</div>
-                
                 <h2 class="text-2xl font-black tracking-tight text-white uppercase">ATTENDANCE GAC-NAGPUR</h2>
-                
                 <div class="mt-3 p-3 bg-white/5 rounded-xl border border-white/10">
                     <p class="text-xgold font-serif italic font-medium text-sm leading-relaxed">
                         "प्रयोजनं चास्य स्वस्थस्य स्वास्थ्यरक्षणं<br>आतुरस्य विकारप्रशमनं च।"
                     </p>
-                    <p class="text-[10px] text-xgray mt-1 uppercase tracking-widest">- Charaka Samhita</p>
                 </div>
             </div>
 
@@ -114,7 +86,6 @@
                 <input type="password" id="r-password" placeholder="Create Password (6+ chars)" class="glass-input w-full p-4 rounded-xl outline-none">
                 <button id="regBtn" onclick="register()" class="w-full bg-xaccent hover:bg-blue-400 text-white font-bold p-4 rounded-full text-lg shadow-lg mt-2">Create Account</button>
             </div>
-            
             <p id="auth-msg" class="text-center text-xs text-red-400 mt-4 h-4"></p>
         </div>
 
@@ -122,9 +93,7 @@
             <h1 class="text-xl font-bold text-red-400 mb-4 border-b border-white/10 pb-2">🛡️ Admin Panel</h1>
             <div class="glass-input p-5 rounded-2xl mb-4 border-red-500/20">
                 <h2 class="font-bold mb-2">Maintenance</h2>
-                <button onclick="cleanOldData()" id="btn-purge" class="w-full btn-danger p-3 rounded-xl font-bold transition">
-                    🗑️ Clean Data (> 45 Days)
-                </button>
+                <button onclick="cleanOldData()" id="btn-purge" class="w-full btn-danger p-3 rounded-xl font-bold transition">🗑️ Clean Data (> 45 Days)</button>
             </div>
             <button onclick="logout()" class="w-full glass-pill p-3 rounded-full font-bold">Logout</button>
         </div>
@@ -152,16 +121,14 @@
 
             <div class="glass-panel rounded-3xl p-6">
                 <h2 class="text-lg font-bold mb-4 text-xlight">Current Class</h2>
-                
                 <div id="active-session-box" class="hidden">
                     <div class="bg-emerald-500/10 border border-emerald-500/30 p-5 rounded-2xl mb-5 text-center relative overflow-hidden">
                         <div class="absolute top-0 left-0 w-full h-1 bg-emerald-500 animate-pulse"></div>
-                        <p class="text-emerald-400 font-black text-xl mb-1" id="session-subject">...</p>
+                        <p class="text-emerald-400 font-black text-xl mb-1 leading-tight" id="session-subject">...</p>
                         <p class="text-xs text-emerald-300/70 uppercase font-bold">Live Session</p>
                     </div>
                     <button onclick="markAttendance()" id="markBtn" class="w-full btn-primary p-4 rounded-full font-bold shadow-lg">📸 Mark Present</button>
                 </div>
-
                 <div id="no-session-msg" class="text-center py-8 border-2 border-dashed border-white/10 rounded-2xl">
                     <p class="text-xgray text-sm">No active classes.</p>
                     <button onclick="checkForActiveSessions()" class="text-xaccent text-xs mt-2 font-bold uppercase">Refresh</button>
@@ -173,27 +140,52 @@
         <div id="teacher-dashboard" class="hidden">
             <div class="glass-panel rounded-3xl p-6 mb-4 border-l-4 border-xaccent">
                 <h1 class="text-2xl font-black">👩‍🏫 Teacher</h1>
+                <p class="text-xs text-xgray" id="teacher-dept-display"></p>
             </div>
 
             <div class="glass-panel rounded-3xl p-6 mb-6">
-                <h2 class="font-bold mb-4 text-lg border-b border-white/10 pb-2">⏱️ Control</h2>
+                <h2 class="font-bold mb-4 text-lg border-b border-white/10 pb-2">⏱️ Class Control</h2>
+                
                 <div id="start-controls">
                     <div class="space-y-3 mb-5">
-                        <select id="t-subject" class="glass-input w-full p-3 rounded-xl cursor-pointer">
-                            <option class="bg-xpanel">Agadtantra</option>
-                            <option class="bg-xpanel">Swasthavritta</option>
-                            <option class="bg-xpanel">Samhita-II</option>
-                            <option class="bg-xpanel">Rog Nidan</option>
-                            <option class="bg-xpanel">Dravyaguna</option>
-                        </select>
-                        <select id="t-duration" class="glass-input w-full p-3 rounded-xl cursor-pointer">
-                            <option class="bg-xpanel" value="5">5 Minutes</option>
-                            <option class="bg-xpanel" value="10">10 Minutes</option>
-                            <option class="bg-xpanel" value="60">1 Hour</option>
-                        </select>
+                        <div>
+                            <label class="text-[10px] text-xgray uppercase font-bold ml-2">Professional Year</label>
+                            <select id="t-year" class="glass-input w-full p-3 rounded-xl cursor-pointer" onchange="updateSubjects()">
+                                <option value="" class="bg-xpanel">Select Year...</option>
+                                <option value="1" class="bg-xpanel">1st Professional (BAMS)</option>
+                                <option value="2" class="bg-xpanel">2nd Professional (BAMS)</option>
+                                <option value="3" class="bg-xpanel">3rd Professional (BAMS)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="text-[10px] text-xgray uppercase font-bold ml-2">Subject</label>
+                            <select id="t-subject" class="glass-input w-full p-3 rounded-xl cursor-pointer">
+                                <option value="" class="bg-xpanel">-- Select Year First --</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="text-[10px] text-xgray uppercase font-bold ml-2">Session Type</label>
+                            <select id="t-type" class="glass-input w-full p-3 rounded-xl cursor-pointer">
+                                <option value="Theory" class="bg-xpanel">Theory</option>
+                                <option value="Practical" class="bg-xpanel">Practical</option>
+                                <option value="Posting" class="bg-xpanel" id="opt-posting">Clinical Posting</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="text-[10px] text-xgray uppercase font-bold ml-2">Duration</label>
+                            <select id="t-duration" class="glass-input w-full p-3 rounded-xl cursor-pointer">
+                                <option class="bg-xpanel" value="5">5 Minutes</option>
+                                <option class="bg-xpanel" value="10">10 Minutes</option>
+                                <option class="bg-xpanel" value="60">1 Hour</option>
+                            </select>
+                        </div>
                     </div>
                     <button onclick="createSession()" class="w-full btn-primary p-3 rounded-full font-bold">Start Class</button>
                 </div>
+                
                 <div id="cancel-controls" class="hidden">
                     <button onclick="cancelSession()" class="w-full btn-danger p-3 rounded-full font-bold">⛔ End Session</button>
                 </div>
@@ -237,12 +229,12 @@
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // GLOBAL VARS
-        let auth, db, currentUserName = "";
+        // --- GLOBAL & CONFIG ---
+        let auth, db, currentUserName = "", currentTeacherDept = null;
         window.activeSessionId = null;
         let watchId = null; 
 
-        // --- 🔑 KEYS PRE-INSTALLED ---
+        // PASTE KEYS HERE IF NEEDED
         const firebaseConfig = {
             apiKey: "AIzaSyBnv-g-85KNpSmYG0ZN_tfHLR4DsXpDttc",
             authDomain: "attendance-gac-ngp.firebaseapp.com",
@@ -258,7 +250,58 @@
             db = getFirestore(app);
         } catch (e) { console.error(e); }
 
-        // --- AUTH & REGISTER LOGIC ---
+        // --- BAMS SUBJECT DATA ---
+        const bamsSubjects = {
+            "1": ["Rachna Sharira", "Kriya Sharira", "Samhita-I", "Padarth Vigyan", "Sanskrit"],
+            "2": ["Agad Tantra", "Swasthavritta", "Dravyaguna", "Rog Nidana", "Samhita-II", "Rasashastra"],
+            "3": ["Kayachikitsa", "Panchakarma & Upakarma", "Shalya Tantra", "Shalakya Tantra", "Prasuti Tantra evam Stree Roga", "Kaumarabhritya", "Samhita Adhyayan-3", "Atyaikachikitsa", "Research Methodology & Stats"]
+        };
+
+        window.updateSubjects = () => {
+            const year = document.getElementById("t-year").value;
+            const subSelect = document.getElementById("t-subject");
+            const typeSelect = document.getElementById("t-type");
+            const optPosting = document.getElementById("opt-posting");
+
+            subSelect.innerHTML = ""; 
+
+            if (!year) {
+                subSelect.innerHTML = "<option>-- Select Year First --</option>";
+                return;
+            }
+
+            // FILTER SUBJECTS (THE SUBJECT LOCK LOGIC)
+            let availableSubjects = bamsSubjects[year] || [];
+
+            // If teacher has a department, FILTER the list
+            if (currentTeacherDept) {
+                availableSubjects = availableSubjects.filter(s => s === currentTeacherDept);
+            }
+
+            if (availableSubjects.length === 0) {
+                 const opt = document.createElement("option");
+                 opt.innerText = currentTeacherDept ? "Subject not in this year" : "No subjects found";
+                 subSelect.appendChild(opt);
+            } else {
+                availableSubjects.forEach(sub => {
+                    const opt = document.createElement("option");
+                    opt.value = sub;
+                    opt.innerText = sub;
+                    opt.classList.add("bg-xpanel");
+                    subSelect.appendChild(opt);
+                });
+            }
+
+            // Logic: 1st Year usually no Clinical Postings
+            if (year === "1") {
+                optPosting.classList.add("hidden");
+                typeSelect.value = "Theory"; 
+            } else {
+                optPosting.classList.remove("hidden");
+            }
+        };
+
+        // --- AUTH LOGIC ---
         window.toggleAuth = (mode) => {
             const loginForm = document.getElementById("form-login");
             const regForm = document.getElementById("form-register");
@@ -288,19 +331,16 @@
             const p = document.getElementById("l-password").value;
             const btn = document.getElementById("loginBtn");
             const msg = document.getElementById("auth-msg");
-            
-            if(!e || !p) { msg.innerText = "Please enter email and password"; return; }
-            
+            if(!e || !p) { msg.innerText = "Enter credentials"; return; }
             btn.innerText = "Verifying...";
             btn.disabled = true;
             signInWithEmailAndPassword(auth, e, p).catch(err => {
-                msg.innerText = "Login Failed: " + err.code.replace("auth/", "");
+                msg.innerText = "Error: " + err.code;
                 btn.innerText = "Log In";
                 btn.disabled = false;
             });
         };
 
-        // NEW REGISTER FUNCTION
         window.register = async () => {
             const name = document.getElementById("r-name").value;
             const email = document.getElementById("r-email").value;
@@ -308,34 +348,27 @@
             const btn = document.getElementById("regBtn");
             const msg = document.getElementById("auth-msg");
 
-            if(!name || !email || !pass) { msg.innerText = "All fields are required"; return; }
-            if(pass.length < 6) { msg.innerText = "Password must be 6+ characters"; return; }
+            if(!name || !email || !pass) { msg.innerText = "All fields required"; return; }
+            if(pass.length < 6) { msg.innerText = "Password too short"; return; }
 
-            btn.innerText = "Creating Account...";
+            btn.innerText = "Creating...";
             btn.disabled = true;
 
             try {
-                // 1. Create Auth User
                 const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-                const user = userCredential.user;
-
-                // 2. Create Database Profile (Student Role Default)
-                await setDoc(doc(db, "users", user.uid), {
+                await setDoc(doc(db, "users", userCredential.user.uid), {
                     name: name,
                     email: email,
                     role: "student",
                     createdAt: new Date()
                 });
-
-                // 3. Success (Auto-login happens by default)
-                msg.innerText = "✅ Success! Logging in...";
+                msg.innerText = "Success!";
             } catch (error) {
-                msg.innerText = "Error: " + error.message;
+                msg.innerText = error.message;
                 btn.innerText = "Create Account";
                 btn.disabled = false;
             }
         };
-
         window.logout = () => signOut(auth).then(() => location.reload());
 
         onAuthStateChanged(auth, async (user) => {
@@ -345,7 +378,6 @@
                     const data = userDoc.data();
                     currentUserName = data.name || "Student";
                     document.getElementById("auth-screen").classList.add("hidden");
-                    
                     if(data.role === "student") {
                         document.getElementById("student-dashboard").classList.remove("hidden");
                         document.getElementById("st-name").innerText = currentUserName;
@@ -353,6 +385,13 @@
                         startLiveRangeTeller(); 
                     } else if (data.role === "teacher") {
                         document.getElementById("teacher-dashboard").classList.remove("hidden");
+                        
+                        // LOAD TEACHER DEPARTMENT (SUBJECT LOCK)
+                        if(data.department) {
+                            currentTeacherDept = data.department;
+                            document.getElementById("teacher-dept-display").innerText = "Dept: " + currentTeacherDept;
+                        }
+
                         loadHistory(); 
                     } else if (data.role === "admin") {
                         document.getElementById("admin-dashboard").classList.remove("hidden");
@@ -361,7 +400,7 @@
             }
         });
 
-        // --- GPS & ATTENDANCE ---
+        // --- GPS ---
         function startLiveRangeTeller() {
             if (navigator.geolocation) {
                 document.getElementById("distance-radar").classList.remove("hidden");
@@ -373,7 +412,6 @@
                     const dot = document.getElementById("radar-dot");
                     const status = document.getElementById("range-status");
                     rangeEl.innerText = Math.round(d);
-
                     if (d < 50) {
                         rangeEl.style.color = "#4ade80";
                         dot.className = "w-2.5 h-2.5 rounded-full bg-green-500 animate-ping";
@@ -447,15 +485,26 @@
             setTimeout(() => location.reload(), 1500);
         }
 
-        // --- TEACHER ---
+        // --- TEACHER: CREATE SESSION ---
         window.createSession = async () => {
-            const subject = document.getElementById("t-subject").value;
+            const year = document.getElementById("t-year").value;
+            const sub = document.getElementById("t-subject").value;
+            const type = document.getElementById("t-type").value;
             const duration = parseInt(document.getElementById("t-duration").value);
+
+            if(!year || !sub) { alert("Please select Year and Subject"); return; }
+            if(sub === "Subject not in this year") { alert("You cannot teach this year."); return; }
+
             const endTime = new Date();
             endTime.setMinutes(endTime.getMinutes() + duration);
+
+            const finalSubjectName = `${sub} (${type})`;
+
             const docRef = await addDoc(collection(db, "sessions"), {
                 teacherId: auth.currentUser.uid,
-                subject: subject,
+                subject: finalSubjectName, 
+                year: year,
+                type: type,
                 startTime: new Date(),
                 endTime: endTime,
                 isActive: true
@@ -523,8 +572,6 @@
             });
         };
         window.closeReport = () => document.getElementById("report-view").classList.add("hidden");
-
-        // --- UTILS ---
         window.checkForActiveSessions = async () => {
             const q = query(collection(db, "sessions"), where("isActive", "==", true));
             const snapshot = await getDocs(q);
