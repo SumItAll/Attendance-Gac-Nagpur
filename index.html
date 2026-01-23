@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>GAC Nagpur Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -33,6 +33,7 @@
             min-height: 100vh;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: #eff3f4;
+            -webkit-tap-highlight-color: transparent;
         }
         .glass-panel {
             background-color: rgba(22, 24, 28, 0.65);
@@ -109,18 +110,13 @@
             
             <div class="glass-input p-5 rounded-2xl mb-4 border-emerald-500/20">
                 <h2 class="font-bold mb-2 text-emerald-400">📡 GPS Range Control</h2>
-                <p class="text-xs text-xgray mb-3">Set max distance for students.</p>
-                
                 <div class="flex gap-2">
                     <select id="admin-range-select" class="glass-input w-full p-3 rounded-xl cursor-pointer bg-black">
                         <option value="50">50 Meters (Strict)</option>
-                        <option value="75">75 Meters</option>
                         <option value="100">100 Meters</option>
-                        <option value="150">150 Meters</option>
                         <option value="200">200 Meters</option>
-                        <option value="300">300 Meters</option>
                         <option value="500">500 Meters</option>
-                        <option value="1000">1 KM (Loose)</option>
+                        <option value="1000">1 KM</option>
                         <option value="5000">5 KM (Testing)</option>
                     </select>
                     <button onclick="saveRange()" id="btn-save-range" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold p-3 rounded-xl">Save</button>
@@ -176,7 +172,7 @@
                         <p class="text-emerald-400 font-mono text-xs uppercase tracking-widest">Verifying Device...</p>
                     </div>
 
-                    <button onclick="startVerificationFlow()" id="markBtn" class="w-full btn-primary p-4 rounded-full font-bold shadow-lg">📍 Start Attendance</button>
+                    <button onclick="startVerificationFlow()" id="markBtn" class="w-full btn-primary p-4 rounded-full font-bold shadow-lg">📍 Verify & Start</button>
                 </div>
 
                 <div id="no-session-msg" class="text-center py-8 border-2 border-dashed border-white/10 rounded-2xl">
@@ -207,12 +203,14 @@
                                 <option value="3" class="bg-xpanel">3rd Professional (BAMS)</option>
                             </select>
                         </div>
+
                         <div>
                             <label class="text-[10px] text-xgray uppercase font-bold ml-2">Subject</label>
                             <select id="t-subject" class="glass-input w-full p-3 rounded-xl cursor-pointer">
                                 <option value="" class="bg-xpanel">-- Select Year First --</option>
                             </select>
                         </div>
+
                         <div>
                             <label class="text-[10px] text-xgray uppercase font-bold ml-2">Session Type</label>
                             <select id="t-type" class="glass-input w-full p-3 rounded-xl cursor-pointer">
@@ -221,6 +219,7 @@
                                 <option value="Posting" class="bg-xpanel" id="opt-posting">Clinical Posting</option>
                             </select>
                         </div>
+
                         <div>
                             <label class="text-[10px] text-xgray uppercase font-bold ml-2">Duration</label>
                             <select id="t-duration" class="glass-input w-full p-3 rounded-xl cursor-pointer">
@@ -284,11 +283,11 @@
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, query, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // --- GLOBAL & CONFIG ---
+        // CONFIG
         let auth, db, currentUserName = "", currentTeacherDept = null;
         window.activeSessionId = null;
         window.activeSessionPin = null; 
-        window.currentRangeLimit = 50; // Default 50m
+        window.currentRangeLimit = 50; 
         let watchId = null; 
 
         const firebaseConfig = {
@@ -306,7 +305,7 @@
             db = getFirestore(app);
         } catch (e) { console.error(e); }
 
-        // --- BAMS SUBJECTS ---
+        // BAMS SUBJECTS
         const bamsSubjects = {
             "1": ["Rachna Sharira", "Kriya Sharira", "Samhita-I", "Padarth Vigyan", "Sanskrit"],
             "2": ["Agad Tantra", "Swasthavritta", "Dravyaguna", "Rog Nidana", "Samhita-II", "Rasashastra"],
@@ -332,7 +331,7 @@
             if (year === "1") { optPosting.classList.add("hidden"); typeSelect.value = "Theory"; } else { optPosting.classList.remove("hidden"); }
         };
 
-        // --- AUTH ---
+        // AUTH
         window.toggleAuth = (mode) => {
             const loginForm = document.getElementById("form-login");
             const regForm = document.getElementById("form-register");
@@ -380,11 +379,8 @@
                     currentUserName = data.name || "Student";
                     document.getElementById("auth-screen").classList.add("hidden");
                     
-                    // FETCH GLOBAL RANGE SETTING
                     const configDoc = await getDoc(doc(db, "settings", "config"));
-                    if (configDoc.exists()) {
-                         window.currentRangeLimit = configDoc.data().allowedRange || 50;
-                    }
+                    if (configDoc.exists()) { window.currentRangeLimit = configDoc.data().allowedRange || 50; }
 
                     if(data.role === "student") {
                         document.getElementById("student-dashboard").classList.remove("hidden");
@@ -398,24 +394,24 @@
                         loadHistory(); 
                     } else if (data.role === "admin") { 
                         document.getElementById("admin-dashboard").classList.remove("hidden");
-                        document.getElementById("admin-range-select").value = window.currentRangeLimit; // Set current
+                        document.getElementById("admin-range-select").value = window.currentRangeLimit; 
                     }
                 }
             }
         });
 
-        // --- ADMIN RANGE SETTING ---
+        // ADMIN
         window.saveRange = async () => {
             const newRange = parseInt(document.getElementById("admin-range-select").value);
             const btn = document.getElementById("btn-save-range");
-            btn.innerText = "Saving...";
+            btn.innerText = "...";
             await setDoc(doc(db, "settings", "config"), { allowedRange: newRange }, { merge: true });
-            btn.innerText = "Saved!";
-            setTimeout(() => { btn.innerText = "Save"; }, 2000);
-            window.currentRangeLimit = newRange; // Update local immediately
+            btn.innerText = "Saved";
+            setTimeout(() => { btn.innerText = "Save"; }, 1500);
+            window.currentRangeLimit = newRange; 
         };
 
-        // --- GPS ---
+        // GPS
         function startLiveRangeTeller() {
             if (navigator.geolocation) {
                 document.getElementById("distance-radar").classList.remove("hidden");
@@ -427,7 +423,6 @@
                     const status = document.getElementById("range-status");
                     rangeEl.innerText = Math.round(d);
                     
-                    // USE DYNAMIC LIMIT
                     if (d < window.currentRangeLimit) { 
                         rangeEl.style.color = "#4ade80"; dot.className = "w-2.5 h-2.5 rounded-full bg-green-500 animate-ping"; status.innerText = "✅ In Range"; status.style.color = "#4ade80"; 
                     } else { 
@@ -437,33 +432,32 @@
             }
         }
 
-        // --- STUDENT ATTENDANCE FLOW (PIN + DEVICE + PHOTO + DYNAMIC RANGE) ---
+        // --- STUDENT ATTENDANCE (IOS FIXED) ---
         window.startVerificationFlow = () => {
              const btn = document.getElementById("markBtn");
              
-             // STEP 1: CHECK PIN
-             const inputPin = document.getElementById("student-pin-input").value;
-             if(inputPin !== window.activeSessionPin) {
-                 alert("❌ WRONG PIN!\nLook at the board and enter the correct code.");
-                 return;
+             // --- IOS FIX: FAST TRACK ---
+             // If button says "Take Selfie", SKIP all checks and click camera immediately.
+             if (btn.innerText.includes("Take Selfie")) {
+                 document.getElementById("cameraInput").click();
+                 return; 
              }
+             
+             // STEP 1: PIN
+             const inputPin = document.getElementById("student-pin-input").value;
+             if(inputPin !== window.activeSessionPin) { alert("❌ WRONG PIN!"); return; }
 
-             // STEP 2: CHECK GPS
-             btn.innerText = "📍 Checking GPS...";
-             btn.disabled = true;
+             // STEP 2: ASYNC CHECKS (GPS/DB)
+             btn.innerText = "📍 Verifying..."; btn.disabled = true;
 
              if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(async (pos) => {
                     const collegeLat = 21.126222; const collegeLng = 79.115222;
                     const d = getDistanceFromLatLonInM(pos.coords.latitude, pos.coords.longitude, collegeLat, collegeLng);
                     
-                    // CHECK AGAINST DYNAMIC LIMIT
                     if (d < window.currentRangeLimit) { 
-                        // STEP 3: CHECK DEVICE
-                        btn.classList.add("hidden");
-                        document.getElementById("pin-ui").classList.add("hidden");
-                        document.getElementById("scanner-ui").classList.remove("hidden"); 
-
+                        // STEP 3: DEVICE
+                        btn.classList.add("hidden"); document.getElementById("pin-ui").classList.add("hidden"); document.getElementById("scanner-ui").classList.remove("hidden"); 
                         const userRef = doc(db, "users", auth.currentUser.uid);
                         const userSnap = await getDoc(userRef);
                         const userData = userSnap.data();
@@ -471,22 +465,23 @@
 
                         setTimeout(async () => {
                             if (userData.registeredDevice && userData.registeredDevice !== currentDeviceId) {
-                                alert("❌ DEVICE MISMATCH!\nUse your registered phone.");
-                                location.reload();
+                                alert("❌ DEVICE MISMATCH!\nUse your registered phone."); location.reload();
                             } else {
                                 if (!userData.registeredDevice) { await updateDoc(userRef, { registeredDevice: currentDeviceId }); }
-                                // STEP 4: OPEN CAMERA
+                                
+                                // STEP 4: PREPARE FOR CAMERA (Wait for user click)
                                 document.getElementById("scanner-ui").classList.add("hidden");
                                 btn.classList.remove("hidden");
-                                document.getElementById("cameraInput").click();
                                 btn.innerText = "📸 Take Selfie";
+                                btn.disabled = false;
+                                // We DO NOT click() here automatically because iOS blocks async clicks.
+                                // We wait for the user to click the button again (Fast Track).
                             }
-                        }, 2000); 
+                        }, 1500); 
 
                     } else { 
                         alert(`❌ Too Far! (${Math.round(d)}m). Limit is ${window.currentRangeLimit}m.`);
-                        btn.innerText = "📍 Start Attendance";
-                        btn.disabled = false;
+                        btn.innerText = "📍 Verify & Start"; btn.disabled = false;
                     }
                 }, (err) => { alert("GPS Error: " + err.message); btn.disabled = false; }, {enableHighAccuracy:true});
             } else { alert("GPS not supported"); }
@@ -503,8 +498,7 @@
                 img.onload = () => {
                     const canvas = document.getElementById("compressor");
                     const ctx = canvas.getContext("2d");
-                    const MAX_WIDTH = 300; 
-                    const scaleSize = MAX_WIDTH / img.width;
+                    const MAX_WIDTH = 300; const scaleSize = MAX_WIDTH / img.width;
                     canvas.width = MAX_WIDTH; canvas.height = img.height * scaleSize;
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                     submitToDB(canvas.toDataURL("image/jpeg", 0.5));
@@ -528,27 +522,21 @@
             setTimeout(() => location.reload(), 1500);
         }
 
-        // --- TEACHER ---
+        // TEACHER
         window.createSession = async () => {
-            const year = document.getElementById("t-year").value;
-            const sub = document.getElementById("t-subject").value;
-            const type = document.getElementById("t-type").value;
-            const duration = parseInt(document.getElementById("t-duration").value);
+            const year = document.getElementById("t-year").value; const sub = document.getElementById("t-subject").value;
+            const type = document.getElementById("t-type").value; const duration = parseInt(document.getElementById("t-duration").value);
 
             if(!year || !sub) { alert("Please select Year and Subject"); return; }
             if(sub === "Subject not in this year") { alert("You cannot teach this year."); return; }
 
             const endTime = new Date(); endTime.setMinutes(endTime.getMinutes() + duration);
             const finalSubjectName = `${sub} (${type})`;
-            
-            // GENERATE 4-DIGIT PIN
             const pin = Math.floor(1000 + Math.random() * 9000).toString();
 
             const docRef = await addDoc(collection(db, "sessions"), {
-                teacherId: auth.currentUser.uid,
-                subject: finalSubjectName, year: year, type: type,
-                startTime: new Date(), endTime: endTime, isActive: true,
-                sessionPin: pin 
+                teacherId: auth.currentUser.uid, subject: finalSubjectName, year: year, type: type,
+                startTime: new Date(), endTime: endTime, isActive: true, sessionPin: pin 
             });
             window.currentSessionId = docRef.id;
             
@@ -577,8 +565,7 @@
             const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
             let records = [];
             snapshot.forEach(doc => {
-                const data = doc.data();
-                const sDate = data.startTime.toDate(); data.id = doc.id;
+                const data = doc.data(); const sDate = data.startTime.toDate(); data.id = doc.id;
                 if (filterType === 'today' && sDate >= startOfDay) records.push(data);
                 else if (filterType === 'week' && sDate >= startOfWeek) records.push(data);
                 else if (!filterType) records.push(data);
