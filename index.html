@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GAC Debug Mode</title>
+    <title>GAC Debug Mode V3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>body { font-family: sans-serif; background-color: #f3f4f6; }</style>
 </head>
 <body class="p-4 max-w-lg mx-auto">
 
     <div id="auth-screen" class="bg-white p-6 rounded-lg shadow-lg mt-10">
-        <h2 class="text-2xl font-bold text-center text-red-600 mb-4">🔧 DEBUG MODE V2</h2>
+        <h2 class="text-2xl font-bold text-center text-red-600 mb-4">🔧 DEBUG MODE V3</h2>
         
         <input type="email" id="email" placeholder="Email" class="w-full p-2 border rounded mb-2">
         <input type="password" id="password" placeholder="Password" class="w-full p-2 border rounded mb-4">
@@ -24,15 +24,16 @@
     <div id="admin-dashboard" class="hidden"><h1 class="text-2xl text-red-600">🛡️ Admin Panel Active</h1></div>
 
     <script type="module">
-        // GLOBAL VARIABLES (Accessible everywhere)
-        let auth, db;
-
+        // 1. IMPORTS MUST BE AT THE VERY TOP
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // 2. DEFINE GLOBAL VARIABLES
+        let auth, db;
+
         // ---------------------------------------------------------
-        // PASTE YOUR KEYS CAREFULLY HERE
+        // 3. PASTE YOUR KEYS CAREFULLY HERE
         // ---------------------------------------------------------
         const firebaseConfig = {
             apiKey: "AIzaSyBnv-g-85KNpSmYG0ZN_tfHLR4DsXpDttc",
@@ -44,21 +45,26 @@
         };
         // ---------------------------------------------------------
 
+        // 4. INITIALIZE FIREBASE
         try {
             const app = initializeApp(firebaseConfig);
-            // Assigning to the global variables
-            auth = getAuth(app);
-            db = getFirestore(app);
-            console.log("Firebase initialized successfully");
+            auth = getAuth(app);      // Assign to global variable
+            db = getFirestore(app);   // Assign to global variable
+            console.log("Firebase initialized");
         } catch (e) {
             alert("FIREBASE CONFIG ERROR:\n" + e.message);
         }
 
+        // 5. LOGIN FUNCTION
         window.tryLogin = () => {
             const e = document.getElementById("email").value;
             const p = document.getElementById("password").value;
             
-            if(!auth) { alert("Error: Firebase not loaded. Check API Keys."); return; }
+            // Check if auth is ready
+            if(!auth) { 
+                alert("CRITICAL: Firebase did not load. Check your API Keys."); 
+                return; 
+            }
             if(!e || !p) { alert("Please enter email and password"); return; }
             
             document.getElementById("loginBtn").innerText = "Logging in...";
@@ -73,32 +79,35 @@
             });
         };
 
-        // Listen for login state
-        if(auth) {
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    try {
-                        const userDoc = await getDoc(doc(db, "users", user.uid));
-                        if (userDoc.exists()) {
-                            const data = userDoc.data();
-                            alert("✅ SUCCESS! Role: " + data.role);
-                            
-                            document.getElementById("auth-screen").classList.add("hidden");
-                            if(data.role === "student") {
-                                document.getElementById("student-dashboard").classList.remove("hidden");
-                                document.getElementById("st-name").innerText = data.name;
-                            } else if (data.role === "admin") {
-                                document.getElementById("admin-dashboard").classList.remove("hidden");
+        // 6. LISTEN FOR LOGIN STATE
+        // We wait 1 second to make sure everything is loaded
+        setTimeout(() => {
+            if(auth) {
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        try {
+                            const userDoc = await getDoc(doc(db, "users", user.uid));
+                            if (userDoc.exists()) {
+                                const data = userDoc.data();
+                                alert("✅ SUCCESS! Role: " + data.role);
+                                
+                                document.getElementById("auth-screen").classList.add("hidden");
+                                if(data.role === "student") {
+                                    document.getElementById("student-dashboard").classList.remove("hidden");
+                                    document.getElementById("st-name").innerText = data.name;
+                                } else if (data.role === "admin") {
+                                    document.getElementById("admin-dashboard").classList.remove("hidden");
+                                }
+                            } else {
+                                alert("Login worked, but User Profile is missing in 'users' collection.");
                             }
-                        } else {
-                            alert("Login worked, but User Profile is missing in 'users' collection.");
+                        } catch(err) {
+                            alert("DATABASE ERROR:\n" + err.message);
                         }
-                    } catch(err) {
-                        alert("DATABASE ERROR:\n" + err.message);
                     }
-                }
-            });
-        }
+                });
+            }
+        }, 1000);
     </script>
 </body>
 </html>
