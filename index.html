@@ -1,194 +1,256 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GAC Glass Portal</title>
+    <title>GAC X-Dark Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        // X-style dark mode palette
+                        xbase: '#000000',
+                        xpanel: '#16181c',
+                        xlight: '#eff3f4',
+                        xgray: '#71767b',
+                        xaccent: '#1d9bf0', // Twitter/X Blue for subtle accents
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        /* GLASSMORPHISM CSS */
+        /* Base Dark Theme */
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Beautiful Gradient */
+            background-color: #000000;
+            /* Subtle deep gradient to give the glass something to blur over */
+            background-image: radial-gradient(circle at top right, rgba(29, 155, 240, 0.15), transparent 40%),
+                              radial-gradient(circle at bottom left, rgba(255, 255, 255, 0.05), transparent 40%);
             min-height: 100vh;
-            font-family: 'Segoe UI', sans-serif;
-            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #eff3f4;
         }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 24px; /* Circle Professional Look */
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+
+        /* Dark Glassmorphism Utility Classes */
+        .glass-panel {
+            background-color: rgba(22, 24, 28, 0.65); /* Semi-transparent X panel color */
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle light border */
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
         }
-        .glass-input {
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            border-radius: 12px;
-        }
-        .glass-input::placeholder { color: rgba(255, 255, 255, 0.7); }
-        .glass-btn {
-            background: rgba(255, 255, 255, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            transition: all 0.3s ease;
-        }
-        .glass-btn:hover { background: rgba(255, 255, 255, 0.5); transform: scale(1.02); }
         
-        /* Utility */
+        .glass-input {
+            background-color: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+        .glass-input:focus {
+            border-color: #1d9bf0; /* X Blue focus */
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+
+        /* Buttons that pop */
+        .btn-primary {
+            background-color: #eff3f4; /* High contrast white */
+            color: black;
+            font-weight: 700;
+            transition: all 0.2s;
+        }
+        .btn-primary:hover { background-color: #d7dbdc; }
+
+        .btn-danger {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+        .btn-danger:hover { background-color: rgba(239, 68, 68, 0.3); }
+
+        .glass-pill {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #eff3f4;
+        }
+        .glass-pill:hover { background: rgba(255, 255, 255, 0.2); }
+
+        /* Scrollbar styling for dark mode */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #16181c; }
+        ::-webkit-scrollbar-thumb { background: #333639; rounded: 4px; }
+
+        /* Utilities */
         .hidden { display: none; }
-        .animate-pulse-slow { animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
     </style>
 </head>
-<body class="p-4 flex items-center justify-center">
+<body class="p-4 flex items-center justify-center text-xlight">
 
-    <div class="w-full max-w-md">
+    <div class="w-full max-w-md relative z-10">
         
-        <div id="auth-screen" class="glass-card p-8 mt-10">
-            <div class="text-center mb-6">
-                <div class="w-20 h-20 bg-white/20 rounded-full mx-auto flex items-center justify-center text-4xl mb-4 shadow-lg">🌿</div>
-                <h2 class="text-3xl font-bold tracking-wide">GAC Portal</h2>
-                <p class="text-white/70 text-sm">Sakkardara Attendance System</p>
+        <div id="auth-screen" class="glass-panel rounded-3xl p-8 mt-10">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 mx-auto flex items-center justify-center text-4xl mb-4">🌿</div>
+                <h2 class="text-3xl font-black tracking-tight">GAC Portal</h2>
+                <p class="text-xgray text-sm mt-2 font-medium">Sakkardara Attendance System</p>
             </div>
 
-            <input type="email" id="email" placeholder="Email Address" class="glass-input w-full p-4 mb-3 outline-none focus:bg-white/30 transition">
-            <input type="password" id="password" placeholder="Password" class="glass-input w-full p-4 mb-6 outline-none focus:bg-white/30 transition">
-            
-            <button id="loginBtn" onclick="login()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-white p-4 rounded-xl font-bold shadow-lg transition duration-300">
-                Secure Login
-            </button>
+            <div class="space-y-4">
+                <input type="email" id="email" placeholder="Email Address" class="glass-input w-full p-4 rounded-xl outline-none transition placeholder-gray-500">
+                <input type="password" id="password" placeholder="Password" class="glass-input w-full p-4 rounded-xl outline-none transition placeholder-gray-500">
+                
+                <button id="loginBtn" onclick="login()" class="w-full btn-primary p-4 rounded-full text-lg shadow-lg mt-6">
+                    Log In
+                </button>
+            </div>
         </div>
 
-        <div id="admin-dashboard" class="hidden glass-card p-6">
-            <h1 class="text-2xl font-bold mb-1 text-red-200">🛡️ Admin Control</h1>
-            <p class="text-sm text-white/60 mb-6">Database Management</p>
+        <div id="admin-dashboard" class="hidden glass-panel rounded-3xl p-6">
+            <div class="flex items-center justify-between mb-6 border-b border-white/10 pb-4">
+                <h1 class="text-xl font-bold text-red-400">🛡️ Admin Control</h1>
+            </div>
             
-            <div class="bg-white/10 p-4 rounded-2xl border border-white/10 mb-4">
-                <h2 class="font-bold mb-2">Storage Cleanup</h2>
-                <button onclick="cleanOldData()" id="btn-purge" class="w-full bg-red-500/80 hover:bg-red-500 text-white p-3 rounded-xl font-bold transition">
+            <div class="glass-input p-5 rounded-2xl mb-4 border-red-500/20">
+                <h2 class="font-bold mb-2 text-lg">Database Cleanup</h2>
+                <p class="text-xgray text-sm mb-4">Remove old photo records to save space.</p>
+                <button onclick="cleanOldData()" id="btn-purge" class="w-full btn-danger p-3 rounded-xl font-bold transition flex items-center justify-center gap-2">
                     🗑️ Auto-Clean (> 45 Days)
                 </button>
-                <p id="admin-log" class="text-xs mt-3 text-white/60 font-mono text-center"></p>
+                <p id="admin-log" class="text-xs mt-3 text-xgray font-mono text-center"></p>
             </div>
-            <button onclick="logout()" class="w-full glass-btn text-white p-3 rounded-xl mt-2">Logout</button>
+            <button onclick="logout()" class="w-full glass-pill p-3 rounded-full mt-4 font-bold">Logout</button>
         </div>
 
         <div id="student-dashboard" class="hidden">
-            <div class="glass-card p-6 mb-4 flex items-center justify-between">
+            <div class="glass-panel rounded-3xl p-6 mb-4 flex items-center justify-between">
                 <div>
-                    <p class="text-xs text-white/60 uppercase tracking-wider">Welcome Back</p>
-                    <h1 class="text-2xl font-bold" id="st-name">Student</h1>
+                    <p class="text-xs text-xgray uppercase tracking-wider font-bold">Welcome Back</p>
+                    <h1 class="text-2xl font-black leading-tight" id="st-name">Student</h1>
                 </div>
-                <div class="w-12 h-12 bg-emerald-400/30 rounded-full flex items-center justify-center text-xl">🎓</div>
+                <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-xl border border-white/20">🎓</div>
             </div>
 
-            <div id="distance-radar" class="glass-card p-4 mb-4 text-center hidden">
-                <p class="text-xs uppercase tracking-widest text-white/60 mb-1">LIVE DISTANCE TO COLLEGE</p>
-                <div class="flex items-center justify-center gap-2">
-                    <div id="radar-dot" class="w-3 h-3 rounded-full bg-gray-400"></div>
-                    <span id="live-range-text" class="text-2xl font-mono font-bold">Waiting...</span>
+            <div id="distance-radar" class="glass-panel rounded-3xl p-5 mb-4 text-center hidden border-xaccent/30">
+                <p class="text-[10px] uppercase tracking-[0.2em] text-xaccent font-bold mb-2">LIVE GPS RADAR</p>
+                <div class="flex items-baseline justify-center gap-1">
+                    <span id="live-range-text" class="text-4xl font-black tracking-tighter">...</span>
+                    <span class="text-xl font-bold text-xgray">meters</span>
                 </div>
-                <p id="range-status" class="text-xs mt-1 text-white/80">Enable GPS to check</p>
+                <div class="flex items-center justify-center gap-2 mt-3">
+                    <div id="radar-dot" class="w-2.5 h-2.5 rounded-full bg-gray-600"></div>
+                    <p id="range-status" class="text-sm font-medium text-xgray">Acquiring signal...</p>
+                </div>
             </div>
 
-            <div class="glass-card p-6">
-                <h2 class="text-lg font-bold mb-4 border-b border-white/20 pb-2">Active Class</h2>
+            <div class="glass-panel rounded-3xl p-6">
+                <h2 class="text-lg font-bold mb-4 text-xlight">Class Status</h2>
                 
                 <div id="active-session-box" class="hidden">
-                    <div class="bg-emerald-500/20 border border-emerald-400/30 p-4 rounded-2xl mb-4 text-center animate-pulse-slow">
-                        <p class="text-emerald-200 font-bold text-lg mb-1" id="session-subject">...</p>
-                        <p class="text-xs text-white/70">Session is Live</p>
+                    <div class="bg-emerald-500/10 border border-emerald-500/30 p-5 rounded-2xl mb-5 text-center relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-emerald-500 animate-pulse"></div>
+                        <p class="text-emerald-400 font-black text-xl mb-1 tracking-tight" id="session-subject">...</p>
+                        <p class="text-xs text-emerald-300/70 uppercase font-bold tracking-wider">Session is Live</p>
                     </div>
                     
-                    <button onclick="markAttendance()" id="markBtn" class="w-full bg-blue-500 hover:bg-blue-400 text-white p-4 rounded-xl font-bold shadow-lg transition transform active:scale-95">
+                    <button onclick="markAttendance()" id="markBtn" class="w-full btn-primary p-4 rounded-full font-bold shadow-lg flex items-center justify-center gap-2">
                         📸 Verify & Mark Present
                     </button>
                 </div>
 
-                <div id="no-session-msg" class="text-center py-8 text-white/40">
-                    <p>No active classes detected.</p>
-                    <button onclick="checkForActiveSessions()" class="text-white/80 text-sm mt-2 underline">Refresh Status</button>
+                <div id="no-session-msg" class="text-center py-10 border-2 border-dashed border-white/10 rounded-2xl">
+                    <p class="text-xgray font-medium">No active classes detected.</p>
+                    <button onclick="checkForActiveSessions()" class="text-xaccent text-sm mt-3 font-bold hover:underline">Refresh Status</button>
                 </div>
             </div>
-            <button onclick="logout()" class="w-full glass-btn text-white p-3 rounded-xl mt-6">Logout</button>
+            <button onclick="logout()" class="w-full glass-pill p-3 rounded-full mt-6 font-bold">Logout</button>
         </div>
 
         <div id="teacher-dashboard" class="hidden">
-            <div class="glass-card p-6 mb-4 border-l-4 border-blue-400">
-                <h1 class="text-2xl font-bold">👩‍🏫 Teacher Portal</h1>
-                <p class="text-sm text-white/60">Classroom Control</p>
+            <div class="glass-panel rounded-3xl p-6 mb-4 border-l-4 border-xaccent">
+                <h1 class="text-2xl font-black">👩‍🏫 Teacher Portal</h1>
+                <p class="text-sm text-xgray font-medium mt-1">Classroom Control Center</p>
             </div>
 
-            <div class="glass-card p-6 mb-6">
-                <h2 class="font-bold mb-4 text-lg">⏱️ Session Control</h2>
+            <div class="glass-panel rounded-3xl p-6 mb-6">
+                <h2 class="font-bold mb-4 text-lg border-b border-white/10 pb-3">⏱️ Session Control</h2>
                 
                 <div id="start-controls">
-                    <div class="grid grid-cols-2 gap-3 mb-3">
-                        <select id="t-subject" class="glass-input p-3">
-                            <option class="text-black">Agadtantra</option>
-                            <option class="text-black">Swasthavritta</option>
-                            <option class="text-black">Samhita-II</option>
-                            <option class="text-black">Rog Nidan</option>
-                            <option class="text-black">Dravyaguna</option>
-                        </select>
-                        <select id="t-duration" class="glass-input p-3">
-                            <option class="text-black" value="5">5 Mins</option>
-                            <option class="text-black" value="10">10 Mins</option>
-                            <option class="text-black" value="60">1 Hour</option>
-                        </select>
+                    <div class="space-y-3 mb-5">
+                        <div>
+                            <label class="text-xs text-xgray font-bold ml-2 uppercase">Subject</label>
+                            <select id="t-subject" class="glass-input w-full p-3 rounded-xl mt-1 cursor-pointer">
+                                <option class="bg-xpanel">Agadtantra</option>
+                                <option class="bg-xpanel">Swasthavritta</option>
+                                <option class="bg-xpanel">Samhita-II</option>
+                                <option class="bg-xpanel">Rog Nidan</option>
+                                <option class="bg-xpanel">Dravyaguna</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs text-xgray font-bold ml-2 uppercase">Duration</label>
+                            <select id="t-duration" class="glass-input w-full p-3 rounded-xl mt-1 cursor-pointer">
+                                <option class="bg-xpanel" value="5">5 Minutes</option>
+                                <option class="bg-xpanel" value="10">10 Minutes</option>
+                                <option class="bg-xpanel" value="60">1 Hour</option>
+                            </select>
+                        </div>
                     </div>
-                    <button onclick="createSession()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-white p-3 rounded-xl font-bold shadow-md">
-                        🚀 Start Class
+                    <button onclick="createSession()" class="w-full btn-primary p-3 rounded-full font-bold">
+                        Start Class 🚀
                     </button>
                 </div>
 
                 <div id="cancel-controls" class="hidden">
-                    <div class="bg-emerald-500/20 border border-emerald-400/50 p-4 rounded-xl mb-3 text-center">
-                        <p class="font-bold text-emerald-200">✅ Session is Live!</p>
+                    <div class="bg-emerald-500/10 border border-emerald-500/30 p-4 rounded-2xl mb-4 text-center">
+                        <p class="font-black text-emerald-400 text-lg">✅ Session is Live</p>
+                        <p class="text-xs text-emerald-300/70">Accepting attendance...</p>
                     </div>
-                    <button onclick="cancelSession()" class="w-full bg-red-500/80 hover:bg-red-500 text-white p-3 rounded-xl font-bold shadow-md animate-pulse">
+                    <button onclick="cancelSession()" class="w-full btn-danger p-3 rounded-full font-bold flex items-center justify-center gap-2">
                         ⛔ End Session Instantly
                     </button>
                 </div>
             </div>
 
-            <div class="glass-card p-6">
-                <h2 class="font-bold mb-4 text-lg">📄 Records Book</h2>
-                
-                <div class="flex gap-2 mb-4 overflow-x-auto pb-2">
-                    <button onclick="filterHistory('today')" class="glass-btn px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap hover:bg-white/20">Today</button>
-                    <button onclick="filterHistory('week')" class="glass-btn px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap hover:bg-white/20">This Week</button>
-                    <button onclick="filterHistory('month')" class="glass-btn px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap hover:bg-white/20">This Month</button>
-                    <button onclick="loadHistory()" class="glass-btn px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap hover:bg-white/20 bg-white/20">All</button>
+            <div class="glass-panel rounded-3xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="font-bold text-lg">📄 Records Book</h2>
                 </div>
                 
-                <div id="history-list" class="space-y-2 max-h-60 overflow-y-auto pr-2">
-                    <p class="text-center text-white/40 text-sm">Select a filter to view records.</p>
+                <div class="flex gap-2 mb-5 overflow-x-auto pb-2 no-scrollbar">
+                    <button onclick="filterHistory('today')" class="glass-pill px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition active:scale-95">Today</button>
+                    <button onclick="filterHistory('week')" class="glass-pill px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition active:scale-95">This Week</button>
+                    <button onclick="filterHistory('month')" class="glass-pill px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition active:scale-95">This Month</button>
+                    <button onclick="loadHistory()" class="glass-pill px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition active:scale-95 bg-white/10">All</button>
+                </div>
+                
+                <div id="history-list" class="space-y-3 max-h-72 overflow-y-auto pr-1">
+                    <p class="text-center text-xgray text-sm py-6">Select a filter above to view records.</p>
                 </div>
             </div>
 
-            <div id="report-view" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-                <div class="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
-                    <div class="p-4 border-b flex justify-between items-center bg-gray-50">
-                        <h3 class="font-bold text-gray-800" id="report-title">Attendance List</h3>
-                        <button onclick="closeReport()" class="text-red-500 font-bold text-xl">&times;</button>
+            <div id="report-view" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-end sm:items-center justify-center sm:p-4">
+                <div class="glass-panel w-full max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl border-t border-white/20 sm:border">
+                    <div class="p-5 border-b border-white/10 flex justify-between items-center">
+                        <h3 class="font-black text-xl text-white" id="report-title">Attendance List</h3>
+                        <button onclick="closeReport()" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition">✕</button>
                     </div>
-                    <div class="max-h-96 overflow-y-auto">
-                        <table class="w-full text-sm text-left text-gray-500">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0">
+                    <div class="max-h-[70vh] overflow-y-auto p-2">
+                        <table class="w-full text-sm text-left text-xgray">
+                            <thead class="text-xs text-white uppercase font-bold border-b border-white/10">
                                 <tr>
                                     <th class="px-4 py-3">Photo</th>
-                                    <th class="px-4 py-3">Student</th>
-                                    <th class="px-4 py-3">Time</th>
+                                    <th class="px-4 py-3">Student Name</th>
+                                    <th class="px-4 py-3 text-right">Time</th>
                                 </tr>
                             </thead>
-                            <tbody id="report-body"></tbody>
+                            <tbody id="report-body" class="divide-y divide-white/5"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <button onclick="logout()" class="w-full glass-btn text-white p-3 rounded-xl mt-6">Logout</button>
+            <button onclick="logout()" class="w-full glass-pill p-3 rounded-full mt-6 font-bold">Logout</button>
         </div>
 
     </div>
@@ -204,16 +266,16 @@
         // GLOBAL VARS
         let auth, db, currentUserName = "";
         window.activeSessionId = null;
-        let watchId = null; // For Live GPS
+        let watchId = null; 
 
-        // --- 🔑 PASTE YOUR FIREBASE KEYS HERE ---
+        // --- 🔑 YOUR FIREBASE KEYS ARE HERE ---
         const firebaseConfig = {
-        apiKey: "AIzaSyBnv-g-85KNpSmYG0ZN_tfHLR4DsXpDttc",
-  authDomain: "attendance-gac-ngp.firebaseapp.com",
-  projectId: "attendance-gac-ngp",
-  storageBucket: "attendance-gac-ngp.firebasestorage.app",
-  messagingSenderId: "772470800474",
-  appId: "1:772470800474:web:5bcf5808a57995a8991863"    
+            apiKey: "AIzaSyBnv-g-85KNpSmYG0ZN_tfHLR4DsXpDttc",
+            authDomain: "attendance-gac-ngp.firebaseapp.com",
+            projectId: "attendance-gac-ngp",
+            storageBucket: "attendance-gac-ngp.firebasestorage.app",
+            messagingSenderId: "772470800474",
+            appId: "1:772470800474:web:5bcf5808a57995a8991863"
         };
 
         try {
@@ -227,10 +289,13 @@
             const e = document.getElementById("email").value;
             const p = document.getElementById("password").value;
             const btn = document.getElementById("loginBtn");
-            btn.innerText = "Authenticating...";
+            const originalText = btn.innerText;
+            btn.innerText = "Verifying...";
+            btn.disabled = true;
             signInWithEmailAndPassword(auth, e, p).catch(err => {
                 alert(err.message);
-                btn.innerText = "Secure Login";
+                btn.innerText = originalText;
+                btn.disabled = false;
             });
         };
         window.logout = () => signOut(auth).then(() => location.reload());
@@ -247,10 +312,10 @@
                         document.getElementById("student-dashboard").classList.remove("hidden");
                         document.getElementById("st-name").innerText = currentUserName;
                         checkForActiveSessions();
-                        startLiveRangeTeller(); // Start the Radar!
+                        startLiveRangeTeller(); 
                     } else if (data.role === "teacher") {
                         document.getElementById("teacher-dashboard").classList.remove("hidden");
-                        loadHistory(); // Load initial list
+                        loadHistory(); 
                     } else if (data.role === "admin") {
                         document.getElementById("admin-dashboard").classList.remove("hidden");
                     }
@@ -258,13 +323,12 @@
             }
         });
 
-        // --- 📡 LIVE RANGE TELLER (NEW) ---
+        // --- 📡 LIVE RANGE TELLER (UPDATED UI) ---
         function startLiveRangeTeller() {
             if (navigator.geolocation) {
                 document.getElementById("distance-radar").classList.remove("hidden");
                 
                 watchId = navigator.geolocation.watchPosition((pos) => {
-                    // GAC Sakkardara Coords
                     const collegeLat = 21.126222; 
                     const collegeLng = 79.115222;
                     const d = getDistanceFromLatLonInM(pos.coords.latitude, pos.coords.longitude, collegeLat, collegeLng);
@@ -274,23 +338,23 @@
                     const dot = document.getElementById("radar-dot");
                     const status = document.getElementById("range-status");
 
-                    rangeEl.innerText = distText + "m";
+                    rangeEl.innerText = distText;
 
                     if (d < 50) {
-                        // INSIDE RANGE (Green)
-                        rangeEl.style.color = "#4ade80"; // Green
-                        dot.className = "w-3 h-3 rounded-full bg-green-400 animate-pulse";
-                        status.innerText = "✅ Within Range. You can mark attendance.";
+                        // INSIDE RANGE (Green/Accent)
+                        rangeEl.style.color = "#4ade80";
+                        dot.className = "w-2.5 h-2.5 rounded-full bg-green-500 animate-ping";
+                        status.innerText = "✅ Ready to mark attendance";
+                        status.style.color = "#4ade80";
                     } else {
-                        // OUTSIDE RANGE (Red)
-                        rangeEl.style.color = "#f87171"; // Red
-                        dot.className = "w-3 h-3 rounded-full bg-red-400";
-                        status.innerText = "❌ Too Far. Move closer (< 50m).";
+                        // OUTSIDE RANGE (Gray/Red)
+                        rangeEl.style.color = "#eff3f4";
+                        dot.className = "w-2.5 h-2.5 rounded-full bg-red-500";
+                        status.innerText = `❌ Move ${Math.round(d - 50)}m closer to department`;
+                        status.style.color = "#71767b";
                     }
 
-                }, (err) => {
-                    console.log("GPS Error for Radar");
-                }, { enableHighAccuracy: true, maximumAge: 10000 });
+                }, (err) => { console.log("GPS Error"); }, { enableHighAccuracy: true, maximumAge: 10000 });
             }
         }
 
@@ -298,7 +362,8 @@
         window.markAttendance = () => {
              if (navigator.geolocation) {
                 const btn = document.getElementById("markBtn");
-                btn.innerText = "📍 Verifying Location...";
+                btn.innerText = "📍 Verifying Exact Location...";
+                btn.disabled = true;
                 navigator.geolocation.getCurrentPosition((pos) => {
                     const collegeLat = 21.126222; 
                     const collegeLng = 79.115222;
@@ -308,16 +373,20 @@
                         document.getElementById("cameraInput").click();
                         btn.innerText = "📸 Opening Camera...";
                     } else { 
-                        alert(`❌ Access Denied!\n\nYou are ${Math.round(d)}m away.\nThe limit is 50m.`);
+                        alert(`❌ Access Denied.\n\nYou are ${Math.round(d)}m away. Limit is 50m.`);
                         btn.innerText = "📸 Verify & Mark Present";
+                        btn.disabled = false;
                     }
-                }, (err) => { alert("GPS Error: " + err.message); }, {enableHighAccuracy:true});
+                }, (err) => { alert("GPS Error: " + err.message); btn.disabled = false; btn.innerText = "Retry"; }, {enableHighAccuracy:true});
             } else { alert("GPS not supported"); }
         };
 
         window.processPhoto = () => {
             const file = document.getElementById("cameraInput").files[0];
             if (!file) return;
+            // Show loading state on button
+            document.getElementById("markBtn").innerText = "⏳ Compressing & Submitting...";
+            
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = (e) => {
@@ -345,8 +414,12 @@
                 timestamp: new Date(),
                 status: "Present"
             });
-            alert("✅ Attendance Marked Successfully!");
-            location.reload();
+            // Success feedback without reload for smoother feel
+            const btn = document.getElementById("markBtn");
+            btn.innerText = "✅ Attendance Marked!";
+            btn.classList.remove("bg-white", "text-black");
+            btn.classList.add("bg-green-500", "text-white");
+            setTimeout(() => location.reload(), 1500);
         }
 
         // --- TEACHER LOGIC ---
@@ -372,20 +445,17 @@
             if(confirm("End this session immediately?")) {
                 if(window.currentSessionId) {
                     await deleteDoc(doc(db, "sessions", window.currentSessionId));
-                    alert("🚫 Session Ended.");
                     document.getElementById("start-controls").classList.remove("hidden");
                     document.getElementById("cancel-controls").classList.add("hidden");
                 }
             }
         };
 
-        // --- SYSTEMATIC RECORDS (Today/Week/Month) ---
+        // --- SYSTEMATIC RECORDS (X Style Update) ---
         window.filterHistory = async (filterType) => {
             const list = document.getElementById("history-list");
-            list.innerHTML = `<p class="text-center text-white/50">Filtering: ${filterType}...</p>`;
+            list.innerHTML = `<div class="flex justify-center p-4"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div></div>`;
             
-            // Note: In a real app, we would use complex Firestore queries. 
-            // For this project, we fetch recent ones and filter in JS to keep it simple and free.
             const q = query(collection(db, "sessions"), where("teacherId", "==", auth.currentUser.uid));
             const snapshot = await getDocs(q);
             
@@ -399,54 +469,56 @@
                 const data = doc.data();
                 const sDate = data.startTime.toDate();
                 data.id = doc.id;
-                
-                // Filtering Logic
                 if (filterType === 'today' && sDate >= startOfDay) records.push(data);
                 else if (filterType === 'week' && sDate >= startOfWeek) records.push(data);
                 else if (filterType === 'month' && sDate >= startOfMonth) records.push(data);
-                else if (!filterType) records.push(data); // All
+                else if (!filterType) records.push(data);
             });
 
-            // Sort descending (newest first)
             records.sort((a, b) => b.startTime.toDate() - a.startTime.toDate());
 
             list.innerHTML = "";
             if(records.length === 0) {
-                list.innerHTML = `<p class="text-center text-white/40 text-sm py-4">No records found for this period.</p>`;
+                list.innerHTML = `<p class="text-center text-xgray text-sm py-6 font-medium">No records found for this period.</p>`;
                 return;
             }
 
             records.forEach(data => {
-                const timeStr = data.startTime.toDate().toLocaleDateString() + " " + data.startTime.toDate().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                const dateObj = data.startTime.toDate();
+                const dateStr = dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+                const timeStr = dateObj.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                
                 const div = document.createElement("div");
-                div.className = "bg-white/10 p-3 rounded-xl border border-white/10 hover:bg-white/20 cursor-pointer transition flex justify-between items-center";
+                // X style list item
+                div.className = "glass-input p-4 rounded-2xl cursor-pointer transition hover:bg-white/5 flex justify-between items-center active:scale-[0.98]";
                 div.innerHTML = `
-                    <div>
-                        <p class="font-bold text-sm">${data.subject}</p>
-                        <p class="text-xs text-white/60">${timeStr}</p>
+                    <div class="flex items-center gap-4">
+                        <div class="h-10 w-10 rounded-full bg-xaccent/20 flex items-center justify-center text-xaccent">📚</div>
+                        <div>
+                            <p class="font-black text-base text-white leading-none">${data.subject}</p>
+                            <p class="text-xs text-xgray mt-1 font-medium">${dateStr} • ${timeStr}</p>
+                        </div>
                     </div>
-                    <span class="text-xl">👉</span>
+                    <span class="text-xgray">→</span>
                 `;
                 div.onclick = () => showReport(data.id, data.subject);
                 list.appendChild(div);
             });
         };
-        
-        // Default load
         window.loadHistory = () => filterHistory(null);
 
         window.showReport = async (sessionId, subject) => {
             document.getElementById("report-view").classList.remove("hidden");
-            document.getElementById("report-title").innerText = `${subject} Report`;
+            document.getElementById("report-title").innerText = subject;
             const tbody = document.getElementById("report-body");
-            tbody.innerHTML = "<tr><td colspan='3' class='text-center p-4'>Loading data...</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='3' class='text-center p-6 text-xgray'>Loading data...</td></tr>";
 
             const q = query(collection(db, "submissions"), where("sessionId", "==", sessionId));
             const snapshot = await getDocs(q);
 
             tbody.innerHTML = "";
             if(snapshot.empty) {
-                tbody.innerHTML = "<tr><td colspan='3' class='p-4 text-center text-gray-400'>No students attended.</td></tr>";
+                tbody.innerHTML = "<tr><td colspan='3' class='p-8 text-center text-xgray font-medium'>No students attended this class.</td></tr>";
                 return;
             }
 
@@ -454,18 +526,17 @@
                 const data = doc.data();
                 const time = data.timestamp.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 const row = `
-                    <tr class="bg-white border-b hover:bg-gray-50">
+                    <tr class="border-b border-white/5 hover:bg-white/5 transition">
                         <td class="px-4 py-3">
-                            <img src="${data.photoBase64}" class="w-10 h-10 rounded-full border border-gray-300 object-cover shadow-sm" onclick="window.open(this.src)">
+                            <img src="${data.photoBase64}" class="w-10 h-10 rounded-full border-2 border-xpanel object-cover" onclick="window.open(this.src)">
                         </td>
-                        <td class="px-4 py-3 font-medium text-gray-900">${data.studentName || "Student"}</td>
-                        <td class="px-4 py-3 text-gray-500">${time}</td>
+                        <td class="px-4 py-3 font-bold text-white">${data.studentName || "Student"}</td>
+                        <td class="px-4 py-3 text-right text-xgray font-mono text-xs">${time}</td>
                     </tr>
                 `;
                 tbody.innerHTML += row;
             });
         };
-
         window.closeReport = () => document.getElementById("report-view").classList.add("hidden");
 
         // --- UTILS ---
@@ -485,13 +556,16 @@
         };
         
         window.cleanOldData = async () => {
-            document.getElementById("btn-purge").innerText = "Processing...";
+            const btn = document.getElementById("btn-purge");
+            btn.innerHTML = "Processing... ⏳";
+            btn.disabled = true;
             const cutoff = new Date();
             cutoff.setDate(cutoff.getDate() - 45); 
             const q = query(collection(db, "submissions"), where("timestamp", "<", cutoff));
             const snapshot = await getDocs(q);
             snapshot.forEach(async (d) => await deleteDoc(d.ref));
-            document.getElementById("btn-purge").innerText = "Done";
+            btn.innerHTML = "Done ✅";
+            setTimeout(() => { btn.innerHTML = "🗑️ Auto-Clean (> 45 Days)"; btn.disabled = false; }, 2000);
         };
 
         function getDistanceFromLatLonInM(lat1, lon1, lat2, lon2) {
