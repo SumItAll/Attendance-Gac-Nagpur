@@ -3,217 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GAC Attendance</title>
+    <title>GAC Debug Mode</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>body { font-family: sans-serif; background-color: #f3f4f6; }</style>
 </head>
 <body class="p-4 max-w-lg mx-auto">
 
     <div id="auth-screen" class="bg-white p-6 rounded-lg shadow-lg mt-10">
-        <h2 class="text-2xl font-bold text-center text-green-700 mb-4">🌿 GAC Login</h2>
+        <h2 class="text-2xl font-bold text-center text-red-600 mb-4">🔧 DEBUG MODE</h2>
+        <p class="text-center text-gray-500 mb-4 text-sm">If you click Login and nothing happens, check your API Keys below.</p>
+        
         <input type="email" id="email" placeholder="Email" class="w-full p-2 border rounded mb-2">
         <input type="password" id="password" placeholder="Password" class="w-full p-2 border rounded mb-4">
-        <button onclick="login()" class="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700">Login</button>
-        <p id="login-status" class="text-center mt-4 text-sm text-red-500"></p>
+        
+        <button id="loginBtn" onclick="tryLogin()" class="w-full bg-red-600 text-white p-2 rounded font-bold">Try Login</button>
+        
+        <div id="error-box" class="mt-4 p-2 bg-black text-green-400 font-mono text-xs rounded hidden">
+            Waiting for errors...
+        </div>
     </div>
 
-    <div id="admin-dashboard" class="hidden">
-        <div class="bg-white p-4 rounded-lg shadow mb-4 border-l-4 border-red-500">
-            <h1 class="text-xl font-bold text-red-700">🛡️ Admin Control</h1>
-            <p class="text-sm text-gray-500 mb-2">Manage Data</p>
-            <button onclick="cleanOldData()" id="btn-purge" class="w-full bg-red-600 text-white p-3 rounded font-bold">
-                🗑️ Delete Old Data (> 45 Days)
-            </button>
-            <p id="admin-log" class="text-xs mt-3 text-gray-500 font-mono"></p>
-        </div>
-        <button onclick="logout()" class="mt-4 text-gray-500 underline w-full text-center">Logout</button>
-    </div>
+    <div id="student-dashboard" class="hidden"><h1 class="text-2xl">👨‍🎓 Student: <span id="st-name"></span></h1></div>
 
-    <div id="student-dashboard" class="hidden">
-        <div class="bg-white p-4 rounded-lg shadow mb-4">
-            <h1 class="text-xl font-bold">👨‍🎓 Student Profile</h1>
-            <p id="st-name" class="text-gray-600">Loading...</p>
-        </div>
-        <div class="bg-white p-4 rounded-lg shadow">
-            <h2 class="text-lg font-bold mb-2">Mark Attendance</h2>
-            <div id="active-session-box" class="p-4 bg-yellow-50 border border-yellow-200 rounded hidden">
-                <p class="font-bold text-yellow-800">🔴 Live Session Active!</p>
-                <p id="session-subject" class="text-sm mb-2">...</p>
-                <button onclick="markAttendance()" class="w-full bg-blue-600 text-white p-2 rounded">📸 Mark Present</button>
-            </div>
-            <div id="no-session-msg" class="text-gray-500 text-center py-4">No active classes right now.</div>
-        </div>
-        <button onclick="logout()" class="mt-4 text-gray-500 underline w-full text-center">Logout</button>
-    </div>
-
-    <div id="teacher-dashboard" class="hidden">
-        <div class="bg-white p-4 rounded-lg shadow mb-4 border-l-4 border-blue-500">
-            <h1 class="text-xl font-bold text-blue-700">👩‍🏫 Teacher Panel</h1>
-        </div>
-        <div class="bg-white p-4 rounded-lg shadow">
-            <label class="block mb-2 font-bold">Subject & Duration</label>
-            <select id="t-subject" class="w-full p-2 border rounded mb-2">
-                <option>Agadtantra</option>
-                <option>Swasthavritta</option>
-                <option>Samhita-II</option>
-                <option>Rog Nidan</option>
-            </select>
-            <select id="t-duration" class="w-full p-2 border rounded mb-4">
-                <option value="5">5 Minutes</option>
-                <option value="10">10 Minutes</option>
-            </select>
-            <button onclick="createSession()" class="w-full bg-blue-600 text-white p-2 rounded">Start Attendance Window</button>
-        </div>
-        <button onclick="logout()" class="mt-4 text-gray-500 underline w-full text-center">Logout</button>
-    </div>
-
-    <input type="file" id="cameraInput" accept="image/*" capture="user" class="hidden" onchange="processPhoto()">
-    <canvas id="compressor" class="hidden"></canvas>
+    <div id="admin-dashboard" class="hidden"><h1 class="text-2xl text-red-600">🛡️ Admin Panel Active</h1></div>
 
     <script type="module">
-        // ----------------------------------------------------
-        // FIREBASE CONFIGURATION
-        // ----------------------------------------------------
+        // ERROR TRAPPING
+        window.onerror = function(message, source, lineno, colno, error) {
+            alert("CRITICAL ERROR:\n" + message);
+            document.getElementById("error-box").classList.remove("hidden");
+            document.getElementById("error-box").innerText = "Error on Line " + lineno + ": " + message;
+        };
+
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        
-        // !!! PASTE YOUR KEYS HERE !!!
-const firebaseConfig = {
-  apiKey: "AIzaSyBnv-g-85KNpSmYG0ZN_tfHLR4DsXpDttc",
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // ---------------------------------------------------------
+        // PASTE YOUR KEYS CAREFULLY BETWEEN THE BRACKETS
+        // ---------------------------------------------------------
+        const firebaseConfig = {
+          apiKey: "AIzaSyBnv-g-85KNpSmYG0ZN_tfHLR4DsXpDttc",
   authDomain: "attendance-gac-ngp.firebaseapp.com",
   projectId: "attendance-gac-ngp",
   storageBucket: "attendance-gac-ngp.firebasestorage.app",
   messagingSenderId: "772470800474",
   appId: "1:772470800474:web:5bcf5808a57995a8991863"
-};
+        };
+        // ---------------------------------------------------------
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);       
+        try {
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+            console.log("Firebase initialized successfully");
+        } catch (e) {
+            alert("FIREBASE CONFIG ERROR: Did you paste your keys? \n" + e.message);
+        }
 
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // --- AUTH & LOGIC ---
-        window.login = () => {
+        window.tryLogin = () => {
             const e = document.getElementById("email").value;
             const p = document.getElementById("password").value;
-            signInWithEmailAndPassword(auth, e, p).catch(err => alert(err.message));
+            
+            if(!e || !p) { alert("Please enter email and password"); return; }
+            
+            document.getElementById("loginBtn").innerText = "Logging in...";
+            
+            signInWithEmailAndPassword(auth, e, p)
+            .then((userCredential) => {
+                alert("Login Success! Checking Database...");
+            })
+            .catch((error) => {
+                alert("LOGIN FAILED:\n" + error.message);
+                document.getElementById("loginBtn").innerText = "Try Login";
+            });
         };
-        window.logout = () => signOut(auth).then(() => location.reload());
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                const userDoc = await getDoc(doc(db, "users", user.uid));
-                if (userDoc.exists()) {
-                    const data = userDoc.data();
-                    document.getElementById("auth-screen").classList.add("hidden");
-                    if(data.role === "student") {
-                        document.getElementById("student-dashboard").classList.remove("hidden");
-                        document.getElementById("st-name").innerText = data.name;
-                        checkForActiveSessions();
-                    } else if (data.role === "teacher") {
-                        document.getElementById("teacher-dashboard").classList.remove("hidden");
-                    } else if (data.role === "admin") {
-                        document.getElementById("admin-dashboard").classList.remove("hidden");
+                try {
+                    const userDoc = await getDoc(doc(db, "users", user.uid));
+                    if (userDoc.exists()) {
+                        const data = userDoc.data();
+                        alert("Database Connected! Role: " + data.role);
+                        document.getElementById("auth-screen").classList.add("hidden");
+                        if(data.role === "student") {
+                            document.getElementById("student-dashboard").classList.remove("hidden");
+                            document.getElementById("st-name").innerText = data.name;
+                        } else if (data.role === "admin") {
+                            document.getElementById("admin-dashboard").classList.remove("hidden");
+                        }
+                    } else {
+                        alert("Login worked, but User Profile is missing in Database.");
                     }
-                } else { alert("User found but no Profile in DB. Contact Admin."); }
+                } catch(err) {
+                    alert("DATABASE ERROR:\n" + err.message);
+                }
             }
         });
-
-        // --- COMPRESS & SAVE PHOTO AS TEXT ---
-        window.processPhoto = () => {
-            const file = document.getElementById("cameraInput").files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = (event) => {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = () => {
-                    const canvas = document.getElementById("compressor");
-                    const ctx = canvas.getContext("2d");
-                    const MAX_WIDTH = 400; 
-                    const scaleSize = MAX_WIDTH / img.width;
-                    canvas.width = MAX_WIDTH;
-                    canvas.height = img.height * scaleSize;
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    
-                    const dataUrl = canvas.toDataURL("image/jpeg", 0.6); // Low quality to save space
-                    submitAttendance(dataUrl);
-                };
-            };
-        };
-
-        async function submitAttendance(photoBase64) {
-             await addDoc(collection(db, "submissions"), {
-                studentId: auth.currentUser.uid,
-                sessionId: window.activeSessionId,
-                photoBase64: photoBase64,
-                timestamp: new Date(),
-                status: "Present"
-            });
-            alert("✅ Attendance Marked!");
-            document.getElementById("active-session-box").classList.add("hidden");
-        }
-
-        window.cleanOldData = async () => {
-            document.getElementById("btn-purge").innerText = "Scanning...";
-            const cutoff = new Date();
-            cutoff.setDate(cutoff.getDate() - 45); 
-            const q = query(collection(db, "submissions"), where("timestamp", "<", cutoff));
-            const snapshot = await getDocs(q);
-            if (snapshot.empty) { document.getElementById("admin-log").innerText = "No old data."; return; }
-            let count = 0;
-            for (const docSnap of snapshot.docs) { await deleteDoc(doc(db, "submissions", docSnap.id)); count++; }
-            document.getElementById("admin-log").innerText = `Deleted ${count} records.`;
-            document.getElementById("btn-purge").innerText = "Done";
-        };
-
-        window.createSession = async () => {
-            const subject = document.getElementById("t-subject").value;
-            const duration = parseInt(document.getElementById("t-duration").value);
-            const endTime = new Date();
-            endTime.setMinutes(endTime.getMinutes() + duration);
-            await addDoc(collection(db, "sessions"), {
-                teacherId: auth.currentUser.uid, subject: subject,
-                startTime: new Date(), endTime: endTime, isActive: true
-            });
-            alert("Class Started!");
-        };
-
-        async function checkForActiveSessions() {
-            const q = query(collection(db, "sessions"), where("isActive", "==", true));
-            const snapshot = await getDocs(q);
-            snapshot.forEach((doc) => {
-                if (new Date() < doc.data().endTime.toDate()) {
-                    document.getElementById("active-session-box").classList.remove("hidden");
-                    document.getElementById("no-session-msg").classList.add("hidden");
-                    document.getElementById("session-subject").innerText = doc.data().subject;
-                    window.activeSessionId = doc.id;
-                }
-            });
-        }
-
-        window.markAttendance = () => {
-             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition((pos) => {
-                    const d = getDistanceFromLatLonInM(pos.coords.latitude, pos.coords.longitude, 21.1300, 79.1100);
-                    // 2000000m range for home testing. Change to 200 for college.
-                    if (d < 2000000) { document.getElementById("cameraInput").click(); } 
-                    else { alert("Too far from college."); }
-                });
-            }
-        };
-        
-        function getDistanceFromLatLonInM(lat1, lon1, lat2, lon2) {
-            var R = 6371e3; var dLat = (lat2-lat1) * Math.PI/180; var dLon = (lon2-lon1) * Math.PI/180; 
-            var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLon/2) * Math.sin(dLon/2); 
-            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); return R * c; 
-        }
     </script>
 </body>
 </html>
