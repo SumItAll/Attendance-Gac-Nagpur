@@ -17,6 +17,9 @@
                         xgray: '#71767b',
                         xaccent: '#1d9bf0',
                         xgold: '#f59e0b',
+                    },
+                    animation: {
+                        'scan': 'scan 2s linear infinite',
                     }
                 }
             }
@@ -48,6 +51,14 @@
         .btn-primary:hover { background-color: #d7dbdc; }
         .btn-danger { background-color: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
         .glass-pill { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.1); color: #eff3f4; }
+        
+        /* SCAN ANIMATION */
+        .scan-line {
+            width: 100%; height: 4px; background: #4ade80; box-shadow: 0 0 10px #4ade80;
+            position: absolute; top: 0; animation: scan 1.5s ease-in-out infinite alternate;
+        }
+        @keyframes scan { 0% { top: 0%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #16181c; }
         ::-webkit-scrollbar-thumb { background: #333639; rounded: 4px; }
@@ -61,7 +72,7 @@
         <div id="auth-screen" class="glass-panel rounded-3xl p-8 mt-4">
             <div class="text-center mb-6">
                 <div class="flex justify-center mb-4">
-                    <img src="logo.png" alt="GAC Nagpur Logo" class="w-28 h-auto drop-shadow-xl">
+                    <img src="logo.png" alt="GAC Nagpur Logo" class="w-28 h-auto drop-shadow-xl" onerror="this.style.display='none'">
                 </div>
                 
                 <h2 class="text-2xl font-black tracking-tight text-white uppercase">ATTENDANCE GAC-NAGPUR</h2>
@@ -95,6 +106,27 @@
 
         <div id="admin-dashboard" class="hidden glass-panel rounded-3xl p-6">
             <h1 class="text-xl font-bold text-red-400 mb-4 border-b border-white/10 pb-2">🛡️ Admin Panel</h1>
+            
+            <div class="glass-input p-5 rounded-2xl mb-4 border-emerald-500/20">
+                <h2 class="font-bold mb-2 text-emerald-400">📡 GPS Range Control</h2>
+                <p class="text-xs text-xgray mb-3">Set max distance for students.</p>
+                
+                <div class="flex gap-2">
+                    <select id="admin-range-select" class="glass-input w-full p-3 rounded-xl cursor-pointer bg-black">
+                        <option value="50">50 Meters (Strict)</option>
+                        <option value="75">75 Meters</option>
+                        <option value="100">100 Meters</option>
+                        <option value="150">150 Meters</option>
+                        <option value="200">200 Meters</option>
+                        <option value="300">300 Meters</option>
+                        <option value="500">500 Meters</option>
+                        <option value="1000">1 KM (Loose)</option>
+                        <option value="5000">5 KM (Testing)</option>
+                    </select>
+                    <button onclick="saveRange()" id="btn-save-range" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold p-3 rounded-xl">Save</button>
+                </div>
+            </div>
+
             <div class="glass-input p-5 rounded-2xl mb-4 border-red-500/20">
                 <h2 class="font-bold mb-2">Maintenance</h2>
                 <button onclick="cleanOldData()" id="btn-purge" class="w-full btn-danger p-3 rounded-xl font-bold transition">🗑️ Clean Data (> 45 Days)</button>
@@ -117,6 +149,7 @@
                     <span id="live-range-text" class="text-4xl font-black">...</span>
                     <span class="text-xl font-bold text-xgray">m</span>
                 </div>
+                <p id="range-limit-display" class="text-[10px] text-xgray mt-1">(Limit: 50m)</p>
                 <div class="flex items-center justify-center gap-2 mt-3">
                     <div id="radar-dot" class="w-2.5 h-2.5 rounded-full bg-gray-600"></div>
                     <p id="range-status" class="text-xs font-medium text-xgray">Acquiring signal...</p>
@@ -125,14 +158,27 @@
 
             <div class="glass-panel rounded-3xl p-6">
                 <h2 class="text-lg font-bold mb-4 text-xlight">Current Class</h2>
+                
                 <div id="active-session-box" class="hidden">
                     <div class="bg-emerald-500/10 border border-emerald-500/30 p-5 rounded-2xl mb-5 text-center relative overflow-hidden">
                         <div class="absolute top-0 left-0 w-full h-1 bg-emerald-500 animate-pulse"></div>
                         <p class="text-emerald-400 font-black text-xl mb-1 leading-tight" id="session-subject">...</p>
                         <p class="text-xs text-emerald-300/70 uppercase font-bold">Live Session</p>
                     </div>
-                    <button onclick="markAttendance()" id="markBtn" class="w-full btn-primary p-4 rounded-full font-bold shadow-lg">📸 Mark Present</button>
+
+                    <div id="pin-ui" class="hidden mb-4">
+                         <p class="text-xs text-center mb-2 text-xgray">Teacher's Board PIN</p>
+                         <input type="tel" id="student-pin-input" maxlength="4" placeholder="____" class="glass-input w-full p-4 text-center text-2xl tracking-[0.5em] font-bold rounded-xl outline-none border-xaccent focus:border-emerald-500">
+                    </div>
+                    
+                    <div id="scanner-ui" class="hidden mb-4 relative w-full h-16 border border-emerald-500/30 rounded-xl overflow-hidden bg-black/50 flex items-center justify-center">
+                        <div class="scan-line"></div>
+                        <p class="text-emerald-400 font-mono text-xs uppercase tracking-widest">Verifying Device...</p>
+                    </div>
+
+                    <button onclick="startVerificationFlow()" id="markBtn" class="w-full btn-primary p-4 rounded-full font-bold shadow-lg">📍 Start Attendance</button>
                 </div>
+
                 <div id="no-session-msg" class="text-center py-8 border-2 border-dashed border-white/10 rounded-2xl">
                     <p class="text-xgray text-sm">No active classes.</p>
                     <button onclick="checkForActiveSessions()" class="text-xaccent text-xs mt-2 font-bold uppercase">Refresh</button>
@@ -161,14 +207,12 @@
                                 <option value="3" class="bg-xpanel">3rd Professional (BAMS)</option>
                             </select>
                         </div>
-
                         <div>
                             <label class="text-[10px] text-xgray uppercase font-bold ml-2">Subject</label>
                             <select id="t-subject" class="glass-input w-full p-3 rounded-xl cursor-pointer">
                                 <option value="" class="bg-xpanel">-- Select Year First --</option>
                             </select>
                         </div>
-
                         <div>
                             <label class="text-[10px] text-xgray uppercase font-bold ml-2">Session Type</label>
                             <select id="t-type" class="glass-input w-full p-3 rounded-xl cursor-pointer">
@@ -177,7 +221,6 @@
                                 <option value="Posting" class="bg-xpanel" id="opt-posting">Clinical Posting</option>
                             </select>
                         </div>
-
                         <div>
                             <label class="text-[10px] text-xgray uppercase font-bold ml-2">Duration</label>
                             <select id="t-duration" class="glass-input w-full p-3 rounded-xl cursor-pointer">
@@ -191,6 +234,10 @@
                 </div>
                 
                 <div id="cancel-controls" class="hidden">
+                    <div class="bg-white/10 border border-white/20 p-4 rounded-2xl mb-4 text-center">
+                        <p class="text-xs text-xgray uppercase font-bold mb-1">Secret PIN for Board</p>
+                        <p id="session-pin-display" class="text-4xl font-mono font-black text-white tracking-widest">----</p>
+                    </div>
                     <button onclick="cancelSession()" class="w-full btn-danger p-3 rounded-full font-bold">⛔ End Session</button>
                 </div>
             </div>
@@ -235,14 +282,15 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, query, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // --- GLOBAL & CONFIG ---
         let auth, db, currentUserName = "", currentTeacherDept = null;
         window.activeSessionId = null;
+        window.activeSessionPin = null; 
+        window.currentRangeLimit = 50; // Default 50m
         let watchId = null; 
 
-        // PASTE KEYS HERE IF NEEDED
         const firebaseConfig = {
             apiKey: "AIzaSyBnv-g-85KNpSmYG0ZN_tfHLR4DsXpDttc",
             authDomain: "attendance-gac-ngp.firebaseapp.com",
@@ -258,7 +306,7 @@
             db = getFirestore(app);
         } catch (e) { console.error(e); }
 
-        // --- BAMS SUBJECT DATA ---
+        // --- BAMS SUBJECTS ---
         const bamsSubjects = {
             "1": ["Rachna Sharira", "Kriya Sharira", "Samhita-I", "Padarth Vigyan", "Sanskrit"],
             "2": ["Agad Tantra", "Swasthavritta", "Dravyaguna", "Rog Nidana", "Samhita-II", "Rasashastra"],
@@ -270,112 +318,57 @@
             const subSelect = document.getElementById("t-subject");
             const typeSelect = document.getElementById("t-type");
             const optPosting = document.getElementById("opt-posting");
-
             subSelect.innerHTML = ""; 
-
-            if (!year) {
-                subSelect.innerHTML = "<option>-- Select Year First --</option>";
-                return;
-            }
-
-            // FILTER SUBJECTS (THE SUBJECT LOCK LOGIC)
+            if (!year) { subSelect.innerHTML = "<option>-- Select Year First --</option>"; return; }
             let availableSubjects = bamsSubjects[year] || [];
-
-            // If teacher has a department, FILTER the list
-            if (currentTeacherDept) {
-                availableSubjects = availableSubjects.filter(s => s === currentTeacherDept);
-            }
-
+            if (currentTeacherDept) { availableSubjects = availableSubjects.filter(s => s === currentTeacherDept); }
             if (availableSubjects.length === 0) {
-                 const opt = document.createElement("option");
-                 opt.innerText = currentTeacherDept ? "Subject not in this year" : "No subjects found";
-                 subSelect.appendChild(opt);
+                 const opt = document.createElement("option"); opt.innerText = currentTeacherDept ? "Subject not in this year" : "No subjects found"; subSelect.appendChild(opt);
             } else {
                 availableSubjects.forEach(sub => {
-                    const opt = document.createElement("option");
-                    opt.value = sub;
-                    opt.innerText = sub;
-                    opt.classList.add("bg-xpanel");
-                    subSelect.appendChild(opt);
+                    const opt = document.createElement("option"); opt.value = sub; opt.innerText = sub; opt.classList.add("bg-xpanel"); subSelect.appendChild(opt);
                 });
             }
-
-            // Logic: 1st Year usually no Clinical Postings
-            if (year === "1") {
-                optPosting.classList.add("hidden");
-                typeSelect.value = "Theory"; 
-            } else {
-                optPosting.classList.remove("hidden");
-            }
+            if (year === "1") { optPosting.classList.add("hidden"); typeSelect.value = "Theory"; } else { optPosting.classList.remove("hidden"); }
         };
 
-        // --- AUTH LOGIC ---
+        // --- AUTH ---
         window.toggleAuth = (mode) => {
             const loginForm = document.getElementById("form-login");
             const regForm = document.getElementById("form-register");
             const tabLogin = document.getElementById("tab-login");
             const tabReg = document.getElementById("tab-register");
             document.getElementById("auth-msg").innerText = "";
-
             if (mode === 'login') {
-                loginForm.classList.remove("hidden");
-                regForm.classList.add("hidden");
-                tabLogin.classList.add("bg-white/10", "text-white");
-                tabLogin.classList.remove("text-xgray");
-                tabReg.classList.remove("bg-white/10", "text-white");
-                tabReg.classList.add("text-xgray");
+                loginForm.classList.remove("hidden"); regForm.classList.add("hidden");
+                tabLogin.classList.add("bg-white/10", "text-white"); tabLogin.classList.remove("text-xgray");
+                tabReg.classList.remove("bg-white/10", "text-white"); tabReg.classList.add("text-xgray");
             } else {
-                loginForm.classList.add("hidden");
-                regForm.classList.remove("hidden");
-                tabReg.classList.add("bg-white/10", "text-white");
-                tabReg.classList.remove("text-xgray");
-                tabLogin.classList.remove("bg-white/10", "text-white");
-                tabLogin.classList.add("text-xgray");
+                loginForm.classList.add("hidden"); regForm.classList.remove("hidden");
+                tabReg.classList.add("bg-white/10", "text-white"); tabReg.classList.remove("text-xgray");
+                tabLogin.classList.remove("bg-white/10", "text-white"); tabLogin.classList.add("text-xgray");
             }
         };
 
         window.login = () => {
-            const e = document.getElementById("l-email").value;
-            const p = document.getElementById("l-password").value;
-            const btn = document.getElementById("loginBtn");
-            const msg = document.getElementById("auth-msg");
+            const e = document.getElementById("l-email").value; const p = document.getElementById("l-password").value;
+            const btn = document.getElementById("loginBtn"); const msg = document.getElementById("auth-msg");
             if(!e || !p) { msg.innerText = "Enter credentials"; return; }
-            btn.innerText = "Verifying...";
-            btn.disabled = true;
-            signInWithEmailAndPassword(auth, e, p).catch(err => {
-                msg.innerText = "Error: " + err.code;
-                btn.innerText = "Log In";
-                btn.disabled = false;
-            });
+            btn.innerText = "Verifying..."; btn.disabled = true;
+            signInWithEmailAndPassword(auth, e, p).catch(err => { msg.innerText = "Error: " + err.code; btn.innerText = "Log In"; btn.disabled = false; });
         };
 
         window.register = async () => {
-            const name = document.getElementById("r-name").value;
-            const email = document.getElementById("r-email").value;
-            const pass = document.getElementById("r-password").value;
-            const btn = document.getElementById("regBtn");
-            const msg = document.getElementById("auth-msg");
-
+            const name = document.getElementById("r-name").value; const email = document.getElementById("r-email").value; const pass = document.getElementById("r-password").value;
+            const btn = document.getElementById("regBtn"); const msg = document.getElementById("auth-msg");
             if(!name || !email || !pass) { msg.innerText = "All fields required"; return; }
             if(pass.length < 6) { msg.innerText = "Password too short"; return; }
-
-            btn.innerText = "Creating...";
-            btn.disabled = true;
-
+            btn.innerText = "Creating..."; btn.disabled = true;
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-                await setDoc(doc(db, "users", userCredential.user.uid), {
-                    name: name,
-                    email: email,
-                    role: "student",
-                    createdAt: new Date()
-                });
+                await setDoc(doc(db, "users", userCredential.user.uid), { name: name, email: email, role: "student", createdAt: new Date() });
                 msg.innerText = "Success!";
-            } catch (error) {
-                msg.innerText = error.message;
-                btn.innerText = "Create Account";
-                btn.disabled = false;
-            }
+            } catch (error) { msg.innerText = error.message; btn.innerText = "Create Account"; btn.disabled = false; }
         };
         window.logout = () => signOut(auth).then(() => location.reload());
 
@@ -386,70 +379,113 @@
                     const data = userDoc.data();
                     currentUserName = data.name || "Student";
                     document.getElementById("auth-screen").classList.add("hidden");
+                    
+                    // FETCH GLOBAL RANGE SETTING
+                    const configDoc = await getDoc(doc(db, "settings", "config"));
+                    if (configDoc.exists()) {
+                         window.currentRangeLimit = configDoc.data().allowedRange || 50;
+                    }
+
                     if(data.role === "student") {
                         document.getElementById("student-dashboard").classList.remove("hidden");
                         document.getElementById("st-name").innerText = currentUserName;
+                        document.getElementById("range-limit-display").innerText = `(Limit: ${window.currentRangeLimit}m)`;
                         checkForActiveSessions();
                         startLiveRangeTeller(); 
                     } else if (data.role === "teacher") {
                         document.getElementById("teacher-dashboard").classList.remove("hidden");
-                        
-                        // LOAD TEACHER DEPARTMENT (SUBJECT LOCK)
-                        if(data.department) {
-                            currentTeacherDept = data.department;
-                            document.getElementById("teacher-dept-display").innerText = "Dept: " + currentTeacherDept;
-                        }
-
+                        if(data.department) { currentTeacherDept = data.department; document.getElementById("teacher-dept-display").innerText = "Dept: " + currentTeacherDept; }
                         loadHistory(); 
-                    } else if (data.role === "admin") {
+                    } else if (data.role === "admin") { 
                         document.getElementById("admin-dashboard").classList.remove("hidden");
+                        document.getElementById("admin-range-select").value = window.currentRangeLimit; // Set current
                     }
                 }
             }
         });
+
+        // --- ADMIN RANGE SETTING ---
+        window.saveRange = async () => {
+            const newRange = parseInt(document.getElementById("admin-range-select").value);
+            const btn = document.getElementById("btn-save-range");
+            btn.innerText = "Saving...";
+            await setDoc(doc(db, "settings", "config"), { allowedRange: newRange }, { merge: true });
+            btn.innerText = "Saved!";
+            setTimeout(() => { btn.innerText = "Save"; }, 2000);
+            window.currentRangeLimit = newRange; // Update local immediately
+        };
 
         // --- GPS ---
         function startLiveRangeTeller() {
             if (navigator.geolocation) {
                 document.getElementById("distance-radar").classList.remove("hidden");
                 watchId = navigator.geolocation.watchPosition((pos) => {
-                    const collegeLat = 21.126222; 
-                    const collegeLng = 79.115222;
+                    const collegeLat = 21.126222; const collegeLng = 79.115222;
                     const d = getDistanceFromLatLonInM(pos.coords.latitude, pos.coords.longitude, collegeLat, collegeLng);
                     const rangeEl = document.getElementById("live-range-text");
                     const dot = document.getElementById("radar-dot");
                     const status = document.getElementById("range-status");
                     rangeEl.innerText = Math.round(d);
-                    if (d < 50) {
-                        rangeEl.style.color = "#4ade80";
-                        dot.className = "w-2.5 h-2.5 rounded-full bg-green-500 animate-ping";
-                        status.innerText = "✅ In Range";
-                        status.style.color = "#4ade80";
-                    } else {
-                        rangeEl.style.color = "#eff3f4";
-                        dot.className = "w-2.5 h-2.5 rounded-full bg-red-500";
-                        status.innerText = `❌ Move ${Math.round(d - 50)}m closer`;
-                        status.style.color = "#71767b";
+                    
+                    // USE DYNAMIC LIMIT
+                    if (d < window.currentRangeLimit) { 
+                        rangeEl.style.color = "#4ade80"; dot.className = "w-2.5 h-2.5 rounded-full bg-green-500 animate-ping"; status.innerText = "✅ In Range"; status.style.color = "#4ade80"; 
+                    } else { 
+                        rangeEl.style.color = "#eff3f4"; dot.className = "w-2.5 h-2.5 rounded-full bg-red-500"; status.innerText = `❌ Move ${Math.round(d - window.currentRangeLimit)}m closer`; status.style.color = "#71767b"; 
                     }
                 }, null, { enableHighAccuracy: true });
             }
         }
 
-        window.markAttendance = () => {
+        // --- STUDENT ATTENDANCE FLOW (PIN + DEVICE + PHOTO + DYNAMIC RANGE) ---
+        window.startVerificationFlow = () => {
+             const btn = document.getElementById("markBtn");
+             
+             // STEP 1: CHECK PIN
+             const inputPin = document.getElementById("student-pin-input").value;
+             if(inputPin !== window.activeSessionPin) {
+                 alert("❌ WRONG PIN!\nLook at the board and enter the correct code.");
+                 return;
+             }
+
+             // STEP 2: CHECK GPS
+             btn.innerText = "📍 Checking GPS...";
+             btn.disabled = true;
+
              if (navigator.geolocation) {
-                const btn = document.getElementById("markBtn");
-                btn.innerText = "📍 Verifying...";
-                btn.disabled = true;
-                navigator.geolocation.getCurrentPosition((pos) => {
-                    const collegeLat = 21.126222; 
-                    const collegeLng = 79.115222;
+                navigator.geolocation.getCurrentPosition(async (pos) => {
+                    const collegeLat = 21.126222; const collegeLng = 79.115222;
                     const d = getDistanceFromLatLonInM(pos.coords.latitude, pos.coords.longitude, collegeLat, collegeLng);
-                    if (d < 50) { 
-                        document.getElementById("cameraInput").click();
-                        btn.innerText = "📸 Opening Camera...";
+                    
+                    // CHECK AGAINST DYNAMIC LIMIT
+                    if (d < window.currentRangeLimit) { 
+                        // STEP 3: CHECK DEVICE
+                        btn.classList.add("hidden");
+                        document.getElementById("pin-ui").classList.add("hidden");
+                        document.getElementById("scanner-ui").classList.remove("hidden"); 
+
+                        const userRef = doc(db, "users", auth.currentUser.uid);
+                        const userSnap = await getDoc(userRef);
+                        const userData = userSnap.data();
+                        const currentDeviceId = navigator.userAgent + "|" + screen.width + "x" + screen.height;
+
+                        setTimeout(async () => {
+                            if (userData.registeredDevice && userData.registeredDevice !== currentDeviceId) {
+                                alert("❌ DEVICE MISMATCH!\nUse your registered phone.");
+                                location.reload();
+                            } else {
+                                if (!userData.registeredDevice) { await updateDoc(userRef, { registeredDevice: currentDeviceId }); }
+                                // STEP 4: OPEN CAMERA
+                                document.getElementById("scanner-ui").classList.add("hidden");
+                                btn.classList.remove("hidden");
+                                document.getElementById("cameraInput").click();
+                                btn.innerText = "📸 Take Selfie";
+                            }
+                        }, 2000); 
+
                     } else { 
-                        alert(`❌ Too Far! (${Math.round(d)}m). Go to Dept.`);
-                        btn.innerText = "📸 Mark Present";
+                        alert(`❌ Too Far! (${Math.round(d)}m). Limit is ${window.currentRangeLimit}m.`);
+                        btn.innerText = "📍 Start Attendance";
                         btn.disabled = false;
                     }
                 }, (err) => { alert("GPS Error: " + err.message); btn.disabled = false; }, {enableHighAccuracy:true});
@@ -463,15 +499,13 @@
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = (e) => {
-                const img = new Image();
-                img.src = e.target.result;
+                const img = new Image(); img.src = e.target.result;
                 img.onload = () => {
                     const canvas = document.getElementById("compressor");
                     const ctx = canvas.getContext("2d");
                     const MAX_WIDTH = 300; 
                     const scaleSize = MAX_WIDTH / img.width;
-                    canvas.width = MAX_WIDTH;
-                    canvas.height = img.height * scaleSize;
+                    canvas.width = MAX_WIDTH; canvas.height = img.height * scaleSize;
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                     submitToDB(canvas.toDataURL("image/jpeg", 0.5));
                 };
@@ -485,7 +519,8 @@
                 sessionId: window.activeSessionId,
                 photoBase64: photoBase64,
                 timestamp: new Date(),
-                status: "Present"
+                status: "Present",
+                deviceVerified: true
             });
             const btn = document.getElementById("markBtn");
             btn.innerText = "✅ Done!";
@@ -493,7 +528,7 @@
             setTimeout(() => location.reload(), 1500);
         }
 
-        // --- TEACHER: CREATE SESSION ---
+        // --- TEACHER ---
         window.createSession = async () => {
             const year = document.getElementById("t-year").value;
             const sub = document.getElementById("t-subject").value;
@@ -503,23 +538,23 @@
             if(!year || !sub) { alert("Please select Year and Subject"); return; }
             if(sub === "Subject not in this year") { alert("You cannot teach this year."); return; }
 
-            const endTime = new Date();
-            endTime.setMinutes(endTime.getMinutes() + duration);
-
+            const endTime = new Date(); endTime.setMinutes(endTime.getMinutes() + duration);
             const finalSubjectName = `${sub} (${type})`;
+            
+            // GENERATE 4-DIGIT PIN
+            const pin = Math.floor(1000 + Math.random() * 9000).toString();
 
             const docRef = await addDoc(collection(db, "sessions"), {
                 teacherId: auth.currentUser.uid,
-                subject: finalSubjectName, 
-                year: year,
-                type: type,
-                startTime: new Date(),
-                endTime: endTime,
-                isActive: true
+                subject: finalSubjectName, year: year, type: type,
+                startTime: new Date(), endTime: endTime, isActive: true,
+                sessionPin: pin 
             });
             window.currentSessionId = docRef.id;
+            
             document.getElementById("start-controls").classList.add("hidden");
             document.getElementById("cancel-controls").classList.remove("hidden");
+            document.getElementById("session-pin-display").innerText = pin;
         };
 
         window.cancelSession = async () => {
@@ -543,8 +578,7 @@
             let records = [];
             snapshot.forEach(doc => {
                 const data = doc.data();
-                const sDate = data.startTime.toDate();
-                data.id = doc.id;
+                const sDate = data.startTime.toDate(); data.id = doc.id;
                 if (filterType === 'today' && sDate >= startOfDay) records.push(data);
                 else if (filterType === 'week' && sDate >= startOfWeek) records.push(data);
                 else if (!filterType) records.push(data);
@@ -587,9 +621,11 @@
             snapshot.forEach((doc) => {
                 if (new Date() < doc.data().endTime.toDate()) {
                     document.getElementById("active-session-box").classList.remove("hidden");
+                    document.getElementById("pin-ui").classList.remove("hidden");
                     document.getElementById("no-session-msg").classList.add("hidden");
                     document.getElementById("session-subject").innerText = doc.data().subject;
                     window.activeSessionId = doc.id;
+                    window.activeSessionPin = doc.data().sessionPin; 
                     found = true;
                 }
             });
