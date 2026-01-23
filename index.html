@@ -89,7 +89,7 @@
                         <p class="text-xs uppercase text-gray-400">Live Session</p>
                     </div>
                     <input type="tel" id="pin-input" maxlength="4" placeholder="PIN" class="glass-input w-32 p-3 text-center text-2xl tracking-widest font-bold mb-4 mx-auto block">
-                    <button onclick="verifyAndMark()" id="markBtn" class="w-full btn-primary p-4 shadow-lg">📍 Verify & Mark</button>
+                    <button onclick="verifyAndMark()" id="markBtn" class="w-full btn-primary p-4 shadow-lg">📍 Verify Location</button>
                 </div>
                 <div id="no-class-ui" class="py-8 text-gray-500">
                     <p>No active class found.</p>
@@ -281,32 +281,62 @@
             }
         };
 
+        // --- NEW 2-STEP VERIFICATION ---
         window.verifyAndMark = () => {
             const btn = document.getElementById('markBtn');
-            // iOS Fix: Fast track if we already know GPS is good, but for safety we recheck briefly
+            
+            // STEP 2: IF BUTTON SAYS "TAKE SELFIE", OPEN CAMERA INSTANTLY
+            if(btn.innerText.includes("Take Selfie")) {
+                document.getElementById('cam').click();
+                return;
+            }
+
+            // STEP 1: VERIFY GPS & DEVICE
             if(document.getElementById('pin-input').value !== activePin) return alert("Wrong PIN");
             
             btn.innerText = "Checking...";
+            btn.disabled = true;
+
             navigator.geolocation.getCurrentPosition(async (p) => {
                 const d = getDist(p.coords.latitude, p.coords.longitude);
-                if(d > rangeLimit) { btn.innerText = "Verify"; return alert(`Too far! (${Math.round(d)}m)`); }
+                if(d > rangeLimit) { 
+                    btn.innerText = "📍 Verify Location"; 
+                    btn.disabled = false;
+                    return alert(`Too far! (${Math.round(d)}m)`); 
+                }
                 
-                // Device Check
                 const uRef = doc(db, "users", auth.currentUser.uid);
                 const uSnap = await getDoc(uRef);
                 const did = navigator.userAgent + screen.width; 
                 
-                if(uSnap.data().deviceId && uSnap.data().deviceId !== did) return alert("Use registered phone!");
+                if(uSnap.data().deviceId && uSnap.data().deviceId !== did) {
+                    alert("Use registered phone!");
+                    location.reload();
+                    return;
+                }
                 if(!uSnap.data().deviceId) await updateDoc(uRef, {deviceId: did});
 
-                document.getElementById('cam').click();
-                btn.innerText = "Verify & Mark";
-            }, () => alert("GPS Error"));
+                // SUCCESS: CHANGE BUTTON TO "TAKE SELFIE"
+                // Do NOT open camera yet. User must click again.
+                btn.innerText = "📸 Take Selfie";
+                btn.className = "w-full bg-green-500 text-white font-bold p-4 rounded-full shadow-lg border-4 border-green-300";
+                btn.disabled = false;
+
+            }, () => { 
+                alert("GPS Error"); 
+                btn.innerText = "📍 Verify Location"; 
+                btn.disabled = false;
+            });
         };
 
         window.uploadPhoto = () => {
             const f = document.getElementById('cam').files[0];
             if(!f) return;
+            // Immediate feedback
+            const btn = document.getElementById('markBtn');
+            btn.innerText = "⏳ Uploading...";
+            btn.className = "w-full bg-yellow-500 text-white font-bold p-4 rounded-full";
+            
             const r = new FileReader();
             r.readAsDataURL(f);
             r.onload = (e) => {
@@ -325,11 +355,13 @@
                 sid: auth.currentUser.uid, name: userName, roll: userRoll, 
                 sessId: activeSessId, photo: b64, time: new Date()
             });
-            alert("Success!"); location.reload();
+            const btn = document.getElementById('markBtn');
+            btn.innerText = "✅ DONE!";
+            btn.className = "w-full bg-blue-600 text-white font-bold p-4 rounded-full";
+            setTimeout(() => location.reload(), 1500);
         }
 
         // TEACHER
-        // --- COMPLETE SYLLABUS DATA ---
         const subs = { 
             "1": ["Rachna Sharira", "Kriya Sharira", "Samhita-I", "Padarth Vigyan", "Sanskrit"], 
             "2": ["Agad Tantra", "Swasthavritta", "Dravyaguna", "Rog Nidana", "Samhita-II", "Rasashastra"], 
@@ -341,15 +373,12 @@
             s.innerHTML = "";
             let list = subs[y] || [];
             
-            // --- STRICT FILTERING ---
             if(teacherDept && teacherDept !== "Admin") {
-                // Keep ONLY the subject that matches the teacher's department exactly
                 list = list.filter(item => item === teacherDept);
             }
 
             if(list.length === 0) {
                 const opt = document.createElement("option");
-                // If the teacher has a dept, but it's not in this year, show specific message
                 opt.innerText = teacherDept ? "You don't teach this year" : "Select Year";
                 s.appendChild(opt);
             } else {
