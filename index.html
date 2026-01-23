@@ -3,124 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GAC Attendance Pro</title>
+    <title>GAC Glass Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>body { font-family: sans-serif; background-color: #f3f4f6; }</style>
-</head>
-<body class="p-4 max-w-lg mx-auto">
-
-    <div id="auth-screen" class="bg-white p-6 rounded-lg shadow-lg mt-10">
-        <h2 class="text-3xl font-bold text-center text-green-700 mb-2">🌿 GAC Sakkardara</h2>
-        <p class="text-center text-gray-500 mb-6">Attendance Portal</p>
-
-        <input type="email" id="email" placeholder="Email" class="w-full p-3 border rounded mb-3">
-        <input type="password" id="password" placeholder="Password" class="w-full p-3 border rounded mb-4">
+    <style>
+        /* GLASSMORPHISM CSS */
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Beautiful Gradient */
+            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+            color: white;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px; /* Circle Professional Look */
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        .glass-input {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            border-radius: 12px;
+        }
+        .glass-input::placeholder { color: rgba(255, 255, 255, 0.7); }
+        .glass-btn {
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            transition: all 0.3s ease;
+        }
+        .glass-btn:hover { background: rgba(255, 255, 255, 0.5); transform: scale(1.02); }
         
-        <button id="loginBtn" onclick="login()" class="w-full bg-green-600 text-white p-3 rounded font-bold hover:bg-green-700">Login</button>
-        <p id="status-msg" class="text-center mt-4 text-sm text-red-500"></p>
-    </div>
+        /* Utility */
+        .hidden { display: none; }
+        .animate-pulse-slow { animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    </style>
+</head>
+<body class="p-4 flex items-center justify-center">
 
-    <div id="admin-dashboard" class="hidden">
-        <div class="bg-white p-4 rounded-lg shadow mb-4 border-l-4 border-red-500">
-            <h1 class="text-xl font-bold text-red-700">🛡️ Admin Panel</h1>
-            <p class="text-sm text-gray-500">Welcome, <span id="admin-name">Admin</span></p>
-        </div>
-        <div class="bg-white p-4 rounded-lg shadow">
-            <h2 class="font-bold mb-2">Storage Maintenance</h2>
-            <button onclick="cleanOldData()" id="btn-purge" class="w-full bg-red-100 text-red-700 border border-red-200 p-3 rounded font-bold">
-                🗑️ Clean Data (> 45 Days)
+    <div class="w-full max-w-md">
+        
+        <div id="auth-screen" class="glass-card p-8 mt-10">
+            <div class="text-center mb-6">
+                <div class="w-20 h-20 bg-white/20 rounded-full mx-auto flex items-center justify-center text-4xl mb-4 shadow-lg">🌿</div>
+                <h2 class="text-3xl font-bold tracking-wide">GAC Portal</h2>
+                <p class="text-white/70 text-sm">Sakkardara Attendance System</p>
+            </div>
+
+            <input type="email" id="email" placeholder="Email Address" class="glass-input w-full p-4 mb-3 outline-none focus:bg-white/30 transition">
+            <input type="password" id="password" placeholder="Password" class="glass-input w-full p-4 mb-6 outline-none focus:bg-white/30 transition">
+            
+            <button id="loginBtn" onclick="login()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-white p-4 rounded-xl font-bold shadow-lg transition duration-300">
+                Secure Login
             </button>
-            <p id="admin-log" class="text-xs mt-3 text-gray-500 font-mono"></p>
-        </div>
-        <button onclick="logout()" class="mt-6 text-gray-500 w-full text-center">Logout</button>
-    </div>
-
-    <div id="student-dashboard" class="hidden">
-        <div class="bg-white p-4 rounded-lg shadow mb-4 border-l-4 border-green-500">
-            <h1 class="text-xl font-bold">👨‍🎓 Student Profile</h1>
-            <p class="text-gray-600">Name: <span id="st-name" class="font-bold">...</span></p>
         </div>
 
-        <div class="bg-white p-4 rounded-lg shadow">
-            <h2 class="text-lg font-bold mb-2">Mark Attendance</h2>
+        <div id="admin-dashboard" class="hidden glass-card p-6">
+            <h1 class="text-2xl font-bold mb-1 text-red-200">🛡️ Admin Control</h1>
+            <p class="text-sm text-white/60 mb-6">Database Management</p>
             
-            <div id="active-session-box" class="p-4 bg-yellow-50 border border-yellow-200 rounded hidden">
-                <div class="flex items-center mb-2">
-                    <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse mr-2"></div>
-                    <p class="font-bold text-yellow-800">Class In Progress</p>
-                </div>
-                <p id="session-subject" class="text-lg font-bold mb-1">...</p>
-                <button onclick="markAttendance()" id="markBtn" class="w-full bg-blue-600 text-white p-3 rounded font-bold shadow-lg mt-2">📸 Mark Present</button>
-            </div>
-
-            <div id="no-session-msg" class="text-gray-400 text-center py-8 bg-gray-50 rounded border border-dashed">
-                <p>No active classes right now.</p>
-                <button onclick="checkForActiveSessions()" class="text-blue-500 text-sm mt-2 underline">Refresh</button>
-            </div>
-        </div>
-        <button onclick="logout()" class="mt-6 text-gray-500 w-full text-center">Logout</button>
-    </div>
-
-    <div id="teacher-dashboard" class="hidden">
-        <div class="bg-white p-4 rounded-lg shadow mb-4 border-l-4 border-blue-500">
-            <h1 class="text-xl font-bold text-blue-700">👩‍🏫 Teacher Panel</h1>
-            <p class="text-sm text-gray-500">Manage Classes</p>
-        </div>
-
-        <div class="bg-white p-4 rounded-lg shadow mb-6">
-            <h2 class="font-bold mb-3">⏱️ Live Session Control</h2>
-            
-            <div id="start-controls">
-                <label class="block mb-1 font-bold text-sm">Subject</label>
-                <select id="t-subject" class="w-full p-3 border rounded mb-3 bg-gray-50">
-                    <option>Agadtantra</option>
-                    <option>Swasthavritta</option>
-                    <option>Samhita-II</option>
-                    <option>Rog Nidan</option>
-                    <option>Dravyaguna</option>
-                </select>
-                <select id="t-duration" class="w-full p-3 border rounded mb-4 bg-gray-50">
-                    <option value="5">5 Mins</option>
-                    <option value="10">10 Mins</option>
-                    <option value="60">1 Hour</option>
-                </select>
-                <button onclick="createSession()" class="w-full bg-blue-600 text-white p-3 rounded font-bold hover:bg-blue-700">Start Class</button>
-            </div>
-
-            <div id="cancel-controls" class="hidden">
-                <div class="bg-green-100 p-3 rounded border border-green-300 text-green-800 mb-3 text-center">
-                    <p class="font-bold">✅ Class is Live!</p>
-                    <p class="text-xs">Students can mark attendance now.</p>
-                </div>
-                <button onclick="cancelSession()" class="w-full bg-red-600 text-white p-3 rounded font-bold hover:bg-red-700 animate-pulse">
-                    ⛔ Cancel / End Session
+            <div class="bg-white/10 p-4 rounded-2xl border border-white/10 mb-4">
+                <h2 class="font-bold mb-2">Storage Cleanup</h2>
+                <button onclick="cleanOldData()" id="btn-purge" class="w-full bg-red-500/80 hover:bg-red-500 text-white p-3 rounded-xl font-bold transition">
+                    🗑️ Auto-Clean (> 45 Days)
                 </button>
+                <p id="admin-log" class="text-xs mt-3 text-white/60 font-mono text-center"></p>
             </div>
+            <button onclick="logout()" class="w-full glass-btn text-white p-3 rounded-xl mt-2">Logout</button>
         </div>
 
-        <div class="bg-white p-4 rounded-lg shadow">
-            <h2 class="font-bold mb-3">📄 Past Attendance Records</h2>
-            <button onclick="loadHistory()" class="w-full bg-gray-200 text-gray-700 p-2 rounded text-sm mb-4">🔄 Load History</button>
-            
-            <div id="history-list" class="space-y-2"></div> <div id="report-view" class="hidden mt-4">
-                <h3 class="font-bold text-sm text-gray-600 border-b pb-2 mb-2" id="report-title">Attendance List</h3>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full text-sm text-left text-gray-500">
-                        <thead class="text-xs text-gray-700 uppercase bg-gray-100">
-                            <tr>
-                                <th class="px-2 py-2">Photo</th>
-                                <th class="px-2 py-2">Name</th>
-                                <th class="px-2 py-2">Time</th>
-                            </tr>
-                        </thead>
-                        <tbody id="report-body"></tbody>
-                    </table>
+        <div id="student-dashboard" class="hidden">
+            <div class="glass-card p-6 mb-4 flex items-center justify-between">
+                <div>
+                    <p class="text-xs text-white/60 uppercase tracking-wider">Welcome Back</p>
+                    <h1 class="text-2xl font-bold" id="st-name">Student</h1>
                 </div>
-                <button onclick="closeReport()" class="mt-3 text-blue-500 text-xs underline">Close Report</button>
+                <div class="w-12 h-12 bg-emerald-400/30 rounded-full flex items-center justify-center text-xl">🎓</div>
             </div>
+
+            <div id="distance-radar" class="glass-card p-4 mb-4 text-center hidden">
+                <p class="text-xs uppercase tracking-widest text-white/60 mb-1">LIVE DISTANCE TO COLLEGE</p>
+                <div class="flex items-center justify-center gap-2">
+                    <div id="radar-dot" class="w-3 h-3 rounded-full bg-gray-400"></div>
+                    <span id="live-range-text" class="text-2xl font-mono font-bold">Waiting...</span>
+                </div>
+                <p id="range-status" class="text-xs mt-1 text-white/80">Enable GPS to check</p>
+            </div>
+
+            <div class="glass-card p-6">
+                <h2 class="text-lg font-bold mb-4 border-b border-white/20 pb-2">Active Class</h2>
+                
+                <div id="active-session-box" class="hidden">
+                    <div class="bg-emerald-500/20 border border-emerald-400/30 p-4 rounded-2xl mb-4 text-center animate-pulse-slow">
+                        <p class="text-emerald-200 font-bold text-lg mb-1" id="session-subject">...</p>
+                        <p class="text-xs text-white/70">Session is Live</p>
+                    </div>
+                    
+                    <button onclick="markAttendance()" id="markBtn" class="w-full bg-blue-500 hover:bg-blue-400 text-white p-4 rounded-xl font-bold shadow-lg transition transform active:scale-95">
+                        📸 Verify & Mark Present
+                    </button>
+                </div>
+
+                <div id="no-session-msg" class="text-center py-8 text-white/40">
+                    <p>No active classes detected.</p>
+                    <button onclick="checkForActiveSessions()" class="text-white/80 text-sm mt-2 underline">Refresh Status</button>
+                </div>
+            </div>
+            <button onclick="logout()" class="w-full glass-btn text-white p-3 rounded-xl mt-6">Logout</button>
         </div>
 
-        <button onclick="logout()" class="mt-6 text-gray-500 w-full text-center">Logout</button>
+        <div id="teacher-dashboard" class="hidden">
+            <div class="glass-card p-6 mb-4 border-l-4 border-blue-400">
+                <h1 class="text-2xl font-bold">👩‍🏫 Teacher Portal</h1>
+                <p class="text-sm text-white/60">Classroom Control</p>
+            </div>
+
+            <div class="glass-card p-6 mb-6">
+                <h2 class="font-bold mb-4 text-lg">⏱️ Session Control</h2>
+                
+                <div id="start-controls">
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <select id="t-subject" class="glass-input p-3">
+                            <option class="text-black">Agadtantra</option>
+                            <option class="text-black">Swasthavritta</option>
+                            <option class="text-black">Samhita-II</option>
+                            <option class="text-black">Rog Nidan</option>
+                            <option class="text-black">Dravyaguna</option>
+                        </select>
+                        <select id="t-duration" class="glass-input p-3">
+                            <option class="text-black" value="5">5 Mins</option>
+                            <option class="text-black" value="10">10 Mins</option>
+                            <option class="text-black" value="60">1 Hour</option>
+                        </select>
+                    </div>
+                    <button onclick="createSession()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-white p-3 rounded-xl font-bold shadow-md">
+                        🚀 Start Class
+                    </button>
+                </div>
+
+                <div id="cancel-controls" class="hidden">
+                    <div class="bg-emerald-500/20 border border-emerald-400/50 p-4 rounded-xl mb-3 text-center">
+                        <p class="font-bold text-emerald-200">✅ Session is Live!</p>
+                    </div>
+                    <button onclick="cancelSession()" class="w-full bg-red-500/80 hover:bg-red-500 text-white p-3 rounded-xl font-bold shadow-md animate-pulse">
+                        ⛔ End Session Instantly
+                    </button>
+                </div>
+            </div>
+
+            <div class="glass-card p-6">
+                <h2 class="font-bold mb-4 text-lg">📄 Records Book</h2>
+                
+                <div class="flex gap-2 mb-4 overflow-x-auto pb-2">
+                    <button onclick="filterHistory('today')" class="glass-btn px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap hover:bg-white/20">Today</button>
+                    <button onclick="filterHistory('week')" class="glass-btn px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap hover:bg-white/20">This Week</button>
+                    <button onclick="filterHistory('month')" class="glass-btn px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap hover:bg-white/20">This Month</button>
+                    <button onclick="loadHistory()" class="glass-btn px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap hover:bg-white/20 bg-white/20">All</button>
+                </div>
+                
+                <div id="history-list" class="space-y-2 max-h-60 overflow-y-auto pr-2">
+                    <p class="text-center text-white/40 text-sm">Select a filter to view records.</p>
+                </div>
+            </div>
+
+            <div id="report-view" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+                <div class="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
+                    <div class="p-4 border-b flex justify-between items-center bg-gray-50">
+                        <h3 class="font-bold text-gray-800" id="report-title">Attendance List</h3>
+                        <button onclick="closeReport()" class="text-red-500 font-bold text-xl">&times;</button>
+                    </div>
+                    <div class="max-h-96 overflow-y-auto">
+                        <table class="w-full text-sm text-left text-gray-500">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0">
+                                <tr>
+                                    <th class="px-4 py-3">Photo</th>
+                                    <th class="px-4 py-3">Student</th>
+                                    <th class="px-4 py-3">Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="report-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="logout()" class="w-full glass-btn text-white p-3 rounded-xl mt-6">Logout</button>
+        </div>
+
     </div>
 
     <input type="file" id="cameraInput" accept="image/*" capture="user" class="hidden" onchange="processPhoto()">
@@ -129,15 +199,16 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs, deleteDoc, updateDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs, deleteDoc, orderBy, Timestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // GLOBAL VARS
         let auth, db, currentUserName = "";
         window.activeSessionId = null;
+        let watchId = null; // For Live GPS
 
-        // --- PASTE YOUR KEYS HERE ---
+        // --- 🔑 PASTE YOUR FIREBASE KEYS HERE ---
         const firebaseConfig = {
-            apiKey: "AIzaSyBnv-g-85KNpSmYG0ZN_tfHLR4DsXpDttc",
+            piKey: "AIzaSyBnv-g-85KNpSmYG0ZN_tfHLR4DsXpDttc",
   authDomain: "attendance-gac-ngp.firebaseapp.com",
   projectId: "attendance-gac-ngp",
   storageBucket: "attendance-gac-ngp.firebasestorage.app",
@@ -155,10 +226,11 @@
         window.login = () => {
             const e = document.getElementById("email").value;
             const p = document.getElementById("password").value;
-            document.getElementById("loginBtn").innerText = "Checking...";
+            const btn = document.getElementById("loginBtn");
+            btn.innerText = "Authenticating...";
             signInWithEmailAndPassword(auth, e, p).catch(err => {
                 alert(err.message);
-                document.getElementById("loginBtn").innerText = "Login";
+                btn.innerText = "Secure Login";
             });
         };
         window.logout = () => signOut(auth).then(() => location.reload());
@@ -175,34 +247,71 @@
                         document.getElementById("student-dashboard").classList.remove("hidden");
                         document.getElementById("st-name").innerText = currentUserName;
                         checkForActiveSessions();
+                        startLiveRangeTeller(); // Start the Radar!
                     } else if (data.role === "teacher") {
                         document.getElementById("teacher-dashboard").classList.remove("hidden");
+                        loadHistory(); // Load initial list
                     } else if (data.role === "admin") {
                         document.getElementById("admin-dashboard").classList.remove("hidden");
-                        document.getElementById("admin-name").innerText = currentUserName;
                     }
                 }
             }
         });
 
-        // --- STUDENT LOGIC ---
+        // --- 📡 LIVE RANGE TELLER (NEW) ---
+        function startLiveRangeTeller() {
+            if (navigator.geolocation) {
+                document.getElementById("distance-radar").classList.remove("hidden");
+                
+                watchId = navigator.geolocation.watchPosition((pos) => {
+                    // GAC Sakkardara Coords
+                    const collegeLat = 21.126222; 
+                    const collegeLng = 79.115222;
+                    const d = getDistanceFromLatLonInM(pos.coords.latitude, pos.coords.longitude, collegeLat, collegeLng);
+                    
+                    const distText = Math.round(d);
+                    const rangeEl = document.getElementById("live-range-text");
+                    const dot = document.getElementById("radar-dot");
+                    const status = document.getElementById("range-status");
+
+                    rangeEl.innerText = distText + "m";
+
+                    if (d < 50) {
+                        // INSIDE RANGE (Green)
+                        rangeEl.style.color = "#4ade80"; // Green
+                        dot.className = "w-3 h-3 rounded-full bg-green-400 animate-pulse";
+                        status.innerText = "✅ Within Range. You can mark attendance.";
+                    } else {
+                        // OUTSIDE RANGE (Red)
+                        rangeEl.style.color = "#f87171"; // Red
+                        dot.className = "w-3 h-3 rounded-full bg-red-400";
+                        status.innerText = "❌ Too Far. Move closer (< 50m).";
+                    }
+
+                }, (err) => {
+                    console.log("GPS Error for Radar");
+                }, { enableHighAccuracy: true, maximumAge: 10000 });
+            }
+        }
+
+        // --- STUDENT ATTENDANCE ---
         window.markAttendance = () => {
              if (navigator.geolocation) {
                 const btn = document.getElementById("markBtn");
-                btn.innerText = "📍 Locating...";
+                btn.innerText = "📍 Verifying Location...";
                 navigator.geolocation.getCurrentPosition((pos) => {
                     const collegeLat = 21.126222; 
                     const collegeLng = 79.115222;
                     const d = getDistanceFromLatLonInM(pos.coords.latitude, pos.coords.longitude, collegeLat, collegeLng);
                     
-                    if (d < 50) { // 50 METERS RANGE
+                    if (d < 50) { 
                         document.getElementById("cameraInput").click();
-                        btn.innerText = "📸 Open Camera";
+                        btn.innerText = "📸 Opening Camera...";
                     } else { 
-                        alert(`❌ You are ${Math.round(d)}m away. Move closer to Dept.`);
-                        btn.innerText = "📸 Mark Present";
+                        alert(`❌ Access Denied!\n\nYou are ${Math.round(d)}m away.\nThe limit is 50m.`);
+                        btn.innerText = "📸 Verify & Mark Present";
                     }
-                }, (err) => { alert("GPS Error: " + err.message); btn.innerText = "Retry"; }, {enableHighAccuracy:true});
+                }, (err) => { alert("GPS Error: " + err.message); }, {enableHighAccuracy:true});
             } else { alert("GPS not supported"); }
         };
 
@@ -217,7 +326,7 @@
                 img.onload = () => {
                     const canvas = document.getElementById("compressor");
                     const ctx = canvas.getContext("2d");
-                    const MAX_WIDTH = 300; // Thumbnail size
+                    const MAX_WIDTH = 300; 
                     const scaleSize = MAX_WIDTH / img.width;
                     canvas.width = MAX_WIDTH;
                     canvas.height = img.height * scaleSize;
@@ -230,13 +339,13 @@
         async function submitToDB(photoBase64) {
              await addDoc(collection(db, "submissions"), {
                 studentId: auth.currentUser.uid,
-                studentName: currentUserName, // Saving Name for Easy Teacher Report
+                studentName: currentUserName,
                 sessionId: window.activeSessionId,
                 photoBase64: photoBase64,
                 timestamp: new Date(),
                 status: "Present"
             });
-            alert("✅ Attendance Marked!");
+            alert("✅ Attendance Marked Successfully!");
             location.reload();
         }
 
@@ -254,85 +363,112 @@
                 endTime: endTime,
                 isActive: true
             });
-            
-            // Switch UI to "Active" mode
             window.currentSessionId = docRef.id;
             document.getElementById("start-controls").classList.add("hidden");
             document.getElementById("cancel-controls").classList.remove("hidden");
         };
 
         window.cancelSession = async () => {
-            if(confirm("Are you sure you want to CANCEL this session?")) {
+            if(confirm("End this session immediately?")) {
                 if(window.currentSessionId) {
                     await deleteDoc(doc(db, "sessions", window.currentSessionId));
-                    alert("🚫 Session Cancelled.");
+                    alert("🚫 Session Ended.");
                     document.getElementById("start-controls").classList.remove("hidden");
                     document.getElementById("cancel-controls").classList.add("hidden");
                 }
             }
         };
 
-        // --- TEACHER REPORT LOGIC ---
-        window.loadHistory = async () => {
+        // --- SYSTEMATIC RECORDS (Today/Week/Month) ---
+        window.filterHistory = async (filterType) => {
             const list = document.getElementById("history-list");
-            list.innerHTML = "Loading...";
+            list.innerHTML = `<p class="text-center text-white/50">Filtering: ${filterType}...</p>`;
             
-            // Get last 10 sessions by this teacher
-            const q = query(collection(db, "sessions"), where("teacherId", "==", auth.currentUser.uid), orderBy("startTime", "desc")); // Needs Index, but let's try simple first
+            // Note: In a real app, we would use complex Firestore queries. 
+            // For this project, we fetch recent ones and filter in JS to keep it simple and free.
+            const q = query(collection(db, "sessions"), where("teacherId", "==", auth.currentUser.uid));
+            const snapshot = await getDocs(q);
             
-            // Simple query first to avoid Index errors for now
-            const qSimple = query(collection(db, "sessions"), where("teacherId", "==", auth.currentUser.uid));
-            const snapshot = await getDocs(qSimple);
-            
-            list.innerHTML = "";
-            snapshot.forEach(docSnap => {
-                const data = docSnap.data();
-                const timeStr = data.startTime.toDate().toLocaleString();
+            const now = new Date();
+            const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+            let records = [];
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const sDate = data.startTime.toDate();
+                data.id = doc.id;
                 
-                const btn = document.createElement("button");
-                btn.className = "w-full text-left p-3 bg-gray-50 border rounded hover:bg-gray-100 flex justify-between";
-                btn.innerHTML = `<span><b>${data.subject}</b><br><span class='text-xs'>${timeStr}</span></span> <span>👉</span>`;
-                btn.onclick = () => showReport(docSnap.id, data.subject);
-                list.appendChild(btn);
+                // Filtering Logic
+                if (filterType === 'today' && sDate >= startOfDay) records.push(data);
+                else if (filterType === 'week' && sDate >= startOfWeek) records.push(data);
+                else if (filterType === 'month' && sDate >= startOfMonth) records.push(data);
+                else if (!filterType) records.push(data); // All
             });
-            
-            if(snapshot.empty) list.innerHTML = "<p class='text-sm text-gray-400'>No past classes found.</p>";
+
+            // Sort descending (newest first)
+            records.sort((a, b) => b.startTime.toDate() - a.startTime.toDate());
+
+            list.innerHTML = "";
+            if(records.length === 0) {
+                list.innerHTML = `<p class="text-center text-white/40 text-sm py-4">No records found for this period.</p>`;
+                return;
+            }
+
+            records.forEach(data => {
+                const timeStr = data.startTime.toDate().toLocaleDateString() + " " + data.startTime.toDate().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                const div = document.createElement("div");
+                div.className = "bg-white/10 p-3 rounded-xl border border-white/10 hover:bg-white/20 cursor-pointer transition flex justify-between items-center";
+                div.innerHTML = `
+                    <div>
+                        <p class="font-bold text-sm">${data.subject}</p>
+                        <p class="text-xs text-white/60">${timeStr}</p>
+                    </div>
+                    <span class="text-xl">👉</span>
+                `;
+                div.onclick = () => showReport(data.id, data.subject);
+                list.appendChild(div);
+            });
         };
+        
+        // Default load
+        window.loadHistory = () => filterHistory(null);
 
         window.showReport = async (sessionId, subject) => {
             document.getElementById("report-view").classList.remove("hidden");
-            document.getElementById("report-title").innerText = `Report: ${subject}`;
+            document.getElementById("report-title").innerText = `${subject} Report`;
             const tbody = document.getElementById("report-body");
-            tbody.innerHTML = "<tr><td colspan='3'>Loading...</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='3' class='text-center p-4'>Loading data...</td></tr>";
 
             const q = query(collection(db, "submissions"), where("sessionId", "==", sessionId));
             const snapshot = await getDocs(q);
 
             tbody.innerHTML = "";
+            if(snapshot.empty) {
+                tbody.innerHTML = "<tr><td colspan='3' class='p-4 text-center text-gray-400'>No students attended.</td></tr>";
+                return;
+            }
+
             snapshot.forEach(doc => {
                 const data = doc.data();
                 const time = data.timestamp.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                
                 const row = `
-                    <tr class="bg-white border-b">
-                        <td class="px-2 py-2">
-                            <img src="${data.photoBase64}" class="w-10 h-10 rounded-full border border-gray-300 object-cover" onclick="window.open(this.src)">
+                    <tr class="bg-white border-b hover:bg-gray-50">
+                        <td class="px-4 py-3">
+                            <img src="${data.photoBase64}" class="w-10 h-10 rounded-full border border-gray-300 object-cover shadow-sm" onclick="window.open(this.src)">
                         </td>
-                        <td class="px-2 py-2 font-medium text-gray-900">${data.studentName || "Student"}</td>
-                        <td class="px-2 py-2 text-gray-500">${time}</td>
+                        <td class="px-4 py-3 font-medium text-gray-900">${data.studentName || "Student"}</td>
+                        <td class="px-4 py-3 text-gray-500">${time}</td>
                     </tr>
                 `;
                 tbody.innerHTML += row;
             });
-            
-            if(snapshot.empty) tbody.innerHTML = "<tr><td colspan='3' class='p-4 text-center'>No students present.</td></tr>";
         };
 
-        window.closeReport = () => {
-            document.getElementById("report-view").classList.add("hidden");
-        };
+        window.closeReport = () => document.getElementById("report-view").classList.add("hidden");
 
-        // --- SHARED UTILS ---
+        // --- UTILS ---
         window.checkForActiveSessions = async () => {
             const q = query(collection(db, "sessions"), where("isActive", "==", true));
             const snapshot = await getDocs(q);
@@ -346,12 +482,8 @@
                     found = true;
                 }
             });
-            if(!found) {
-                 document.getElementById("active-session-box").classList.add("hidden");
-                 document.getElementById("no-session-msg").classList.remove("hidden");
-            }
         };
-
+        
         window.cleanOldData = async () => {
             document.getElementById("btn-purge").innerText = "Processing...";
             const cutoff = new Date();
