@@ -203,7 +203,7 @@
                 </div>
                 <div id="view-analytics" class="hidden flex-1 flex flex-col px-4 pb-4">
                     <div class="flex gap-2 mb-3">
-                        <select id="analy-filter" onchange="renderAnalyticsTable()" class="ios-input flex-1 p-2 text-xs font-bold"><option value="All">All Types</option><option value="Theory">Theory</option><option value="Practical">Practical</option></select>
+                        <select id="analy-filter" onchange="renderAnalyticsTable()" class="ios-input flex-1 p-2 text-xs font-bold"><option value="All">All Types</option><option value="Theory">Theory</option><option value="Practical">Practical</option><option value="Posting">Posting</option></select>
                         <button onclick="toggleDefaulters()" id="btn-defaulter" class="ios-input px-3 text-xs font-bold text-iossub">⚠️ &lt;75%</button>
                         <button onclick="calcAnalytics()" class="ios-input px-3 text-xs">🔄</button>
                     </div>
@@ -502,10 +502,6 @@
                 const color = pct < 75 ? "text-iosred" : "text-iosgreen";
                 tbody.innerHTML += `<tr class="border-b border-gray-200 dark:border-white/5 item-row"><td class="p-3 font-mono text-iossub">${st.roll}</td><td class="p-3 font-medium">${st.name}</td><td class="p-3 text-right font-bold ${color}">${pct}%</td></tr>`;
             });
-        };
-        window.filterTable = () => {
-            const term = document.getElementById('search-bar').value.toLowerCase();
-            document.querySelectorAll('.item-row').forEach(row => { row.style.display = row.innerText.toLowerCase().includes(term) ? '' : 'none'; });
         };
         window.toggleDefaulters = () => { isDefaulterMode = !isDefaulterMode; document.getElementById('btn-defaulter').className = isDefaulterMode ? "ios-input px-3 text-xs font-bold text-iosred border border-iosred" : "ios-input px-3 text-xs font-bold text-iossub"; renderAnalyticsTable(); };
         window.exportCSV = () => {
