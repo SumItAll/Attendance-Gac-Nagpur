@@ -92,15 +92,12 @@
                 <input type="password" id="r-password" placeholder="Create Password" class="ios-input w-full p-4">
                 <button onclick="register()" id="regBtn" class="w-full bg-iosgreen hover:bg-green-600 text-white font-bold p-4 rounded-xl text-lg shadow-lg transition-all active:scale-95">Create Account</button>
             </div>
-            <p class="text-center text-xs text-iossub mt-8 opacity-50">© 2026 Sumit Jha. Ironclad Edition.</p>
+            <p class="text-center text-xs text-iossub mt-8 opacity-50">© 2026 Sumit Jha.</p>
         </div>
 
         <div id="admin-dashboard" class="hidden flex-col h-full pt-8">
             <div class="flex justify-between items-center mb-6 px-2">
                 <h1 class="text-3xl font-bold">Admin Panel</h1>
-                <button onclick="logout()" class="bg-iosred/10 text-iosred p-2 rounded-full hover:bg-iosred/20 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" /></svg>
-                </button>
             </div>
             
             <div class="glass-panel p-5 mb-4">
@@ -120,7 +117,7 @@
                 </div>
             </div>
 
-            <div class="glass-panel p-5 mb-4">
+            <div class="glass-panel p-5 mb-4 flex-1">
                 <h3 class="text-xs font-bold text-iossub uppercase mb-3">System</h3>
                 <div class="flex items-center justify-between mb-3">
                     <span class="text-sm font-medium">GPS Range</span>
@@ -131,6 +128,8 @@
                 <button onclick="saveRange()" class="w-full bg-gray-200 dark:bg-white/10 py-2 rounded-lg font-semibold text-sm mb-2">Save Config</button>
                 <button onclick="cleanOldData()" class="w-full bg-iosred/10 text-iosred py-2 rounded-lg font-bold text-sm">Clean Data (>45 Days)</button>
             </div>
+            
+            <button onclick="logout()" class="w-full py-4 text-iosred font-bold text-sm mt-2 mb-4">Sign Out</button>
         </div>
 
         <div id="student-dashboard" class="hidden flex-col h-full pt-6">
@@ -139,9 +138,6 @@
                     <p class="text-iossub text-sm font-semibold">Hello,</p>
                     <h1 class="text-3xl font-bold" id="st-name">Student</h1>
                 </div>
-                <button onclick="logout()" class="bg-iosred/10 text-iosred p-2 rounded-full hover:bg-iosred/20 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" /></svg>
-                </button>
             </div>
 
             <div class="glass-panel p-5 mb-6 flex justify-between items-center">
@@ -163,14 +159,13 @@
                     <button onclick="checkSession()" class="mt-4 text-iosblue font-semibold text-sm">Refresh Status</button>
                 </div>
             </div>
+            
+            <button onclick="logout()" class="w-full py-4 text-iosred font-bold text-sm mt-2 mb-4">Sign Out</button>
         </div>
 
         <div id="teacher-dashboard" class="hidden flex-col h-full pt-6">
             <div class="flex justify-between items-center mb-6 px-2">
                 <div><h1 class="text-2xl font-bold">Teacher</h1><p class="text-xs text-iossub" id="t-dept">...</p></div>
-                <button onclick="logout()" class="bg-iosred/10 text-iosred p-2 rounded-full hover:bg-iosred/20 transition shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" /></svg>
-                </button>
             </div>
 
             <div class="glass-panel p-5 mb-6">
@@ -218,6 +213,8 @@
                     <button onclick="exportCSV()" class="mt-3 w-full bg-iosgreen/10 text-iosgreen py-2 rounded-lg text-xs font-bold">Download CSV</button>
                 </div>
             </div>
+            
+            <button onclick="logout()" class="w-full py-4 text-iosred font-bold text-sm mt-2 mb-4">Sign Out</button>
         </div>
 
         <div id="report-modal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-end">
