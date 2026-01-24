@@ -3,202 +3,297 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GAC Nagpur Portal</title>
+    <title>GAC Nagpur</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
-                    colors: { xbase: '#000000', xpanel: '#16181c', xlight: '#eff3f4', xgray: '#71767b', xaccent: '#1d9bf0', xgold: '#f59e0b' },
-                    animation: { 'pulse-slow': 'pulse 3s infinite' }
+                    colors: {
+                        iosbg: '#000000',
+                        ioscard: '#1c1c1e',
+                        iosgray: '#2c2c2e',
+                        iosblue: '#0a84ff',
+                        iosgreen: '#30d158',
+                        iosred: '#ff453a',
+                        iostext: '#f2f2f7',
+                        iossub: '#8e8e93'
+                    },
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"Segoe UI"', 'Roboto', 'sans-serif'],
+                    },
+                    animation: {
+                        'slide-up': 'slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)',
+                        'fade-in': 'fadeIn 0.2s ease-out',
+                        'pulse-slow': 'pulse 3s infinite'
+                    },
+                    keyframes: {
+                        slideUp: { '0%': { transform: 'translateY(100%)' }, '100%': { transform: 'translateY(0)' } },
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } }
+                    }
                 }
             }
         }
     </script>
     <style>
-        body { background-color: #000000; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #eff3f4; -webkit-tap-highlight-color: transparent; }
-        .glass-panel { background: rgba(22, 24, 28, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); border-radius: 1.5rem; }
-        .glass-input { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); color: white; border-radius: 0.75rem; }
-        .glass-input:focus { border-color: #1d9bf0; background: rgba(0, 0, 0, 0.8); outline: none; }
-        .btn-primary { background: #eff3f4; color: black; font-weight: 800; border-radius: 9999px; transition: 0.2s; }
-        .btn-primary:active { transform: scale(0.95); }
-        .hidden { display: none; }
-        ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: #16181c; } ::-webkit-scrollbar-thumb { background: #333639; rounded: 4px; }
-        .status-green { color: #4ade80; font-weight: bold; }
-        .status-red { color: #f87171; font-weight: bold; }
+        body { background-color: #000000; color: #f2f2f7; -webkit-tap-highlight-color: transparent; }
+        
+        /* iOS Glassmorphism */
+        .glass-panel {
+            background: rgba(28, 28, 30, 0.65);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+        }
+        
+        /* iOS Inputs */
+        .ios-input {
+            background: rgba(118, 118, 128, 0.24);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 17px;
+            transition: all 0.2s;
+        }
+        .ios-input:focus { background: rgba(118, 118, 128, 0.4); outline: none; }
+        
+        /* iOS Segmented Control */
+        .segment-control {
+            background: rgba(118, 118, 128, 0.24);
+            border-radius: 9px;
+            padding: 2px;
+            display: flex;
+        }
+        .segment-btn {
+            flex: 1;
+            text-align: center;
+            padding: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 7px;
+            color: #8e8e93;
+            transition: all 0.2s;
+        }
+        .segment-btn.active {
+            background: #636366;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Toast Notification */
+        #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 400px; }
+        .toast { background: rgba(50, 50, 50, 0.9); backdrop-filter: blur(10px); color: white; padding: 12px 20px; border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); font-size: 14px; font-weight: 600; text-align: center; margin-bottom: 10px; animation: fadeIn 0.3s forwards; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
     </style>
 </head>
-<body class="p-4 flex items-center justify-center">
+<body class="flex justify-center min-h-screen">
 
-    <div class="w-full max-w-md">
+    <div id="toast-container"></div>
+
+    <div class="w-full max-w-md p-4 flex flex-col h-screen overflow-hidden relative">
         
-        <div id="auth-screen" class="glass-panel p-8 mt-4">
-            <div class="text-center mb-6">
-                <img src="logo.png" class="w-24 mx-auto mb-4 drop-shadow-xl" onerror="this.style.display='none'">
-                <h2 class="text-xl font-black text-white uppercase">ATTENDANCE GAC-NAGPUR</h2>
-                <div class="mt-3 p-3 bg-white/5 rounded-xl border border-white/10">
-                    <p class="text-xgold font-serif italic font-medium text-xs leading-relaxed">
-                        "प्रयोजनं चास्य स्वस्थस्य स्वास्थ्यरक्षणं<br>आतुरस्य विकारप्रशमनं च।"
-                    </p>
-                </div>
+        <div id="auth-screen" class="flex-1 flex flex-col justify-center animate-fade-in p-2">
+            <div class="text-center mb-8">
+                <img src="logo.png" class="w-28 mx-auto mb-6 drop-shadow-2xl rounded-2xl" onerror="this.style.display='none'">
+                <h1 class="text-3xl font-black tracking-tight text-white mb-2">GAC NAGPUR</h1>
+                <p class="text-iossub text-sm font-medium">Digital Attendance Portal</p>
             </div>
-            <div class="flex gap-2 mb-6 p-1 bg-white/5 rounded-xl">
-                <button onclick="toggleAuth('login')" id="tab-login" class="flex-1 py-2 text-xs font-bold rounded-lg bg-white/20">LOGIN</button>
-                <button onclick="toggleAuth('register')" id="tab-register" class="flex-1 py-2 text-xs font-bold rounded-lg text-gray-500">REGISTER</button>
+
+            <div class="glass-panel p-1 mb-6 flex">
+                <button onclick="toggleAuth('login')" id="tab-login" class="flex-1 py-3 text-sm font-bold rounded-xl bg-white/10 text-white transition-all">Login</button>
+                <button onclick="toggleAuth('register')" id="tab-register" class="flex-1 py-3 text-sm font-bold rounded-xl text-iossub transition-all">Register</button>
             </div>
+
             <div id="form-login" class="space-y-4">
-                <input type="email" id="l-email" placeholder="Email" class="glass-input w-full p-4">
-                <input type="password" id="l-password" placeholder="Password" class="glass-input w-full p-4">
-                <button onclick="login()" id="loginBtn" class="w-full btn-primary p-4 text-lg">Log In</button>
+                <input type="email" id="l-email" placeholder="Email Address" class="ios-input w-full p-4">
+                <input type="password" id="l-password" placeholder="Password" class="ios-input w-full p-4">
+                <button onclick="login()" id="loginBtn" class="w-full bg-iosblue hover:bg-blue-600 text-white font-bold p-4 rounded-xl text-lg shadow-lg shadow-blue-900/20 transition-all">Sign In</button>
             </div>
+
             <div id="form-register" class="space-y-4 hidden">
-                <input type="text" id="r-name" placeholder="Full Name" class="glass-input w-full p-4">
-                <input type="number" id="r-roll" placeholder="Roll No" class="glass-input w-full p-4 border-l-4 border-xaccent">
-                <input type="email" id="r-email" placeholder="Email" class="glass-input w-full p-4">
-                <input type="password" id="r-password" placeholder="Password (6+ chars)" class="glass-input w-full p-4">
-                <button onclick="register()" id="regBtn" class="w-full bg-blue-500 text-white font-bold p-4 rounded-full">Sign Up</button>
+                <input type="text" id="r-name" placeholder="Full Name" class="ios-input w-full p-4">
+                <input type="number" id="r-roll" placeholder="Roll Number" class="ios-input w-full p-4">
+                <input type="email" id="r-email" placeholder="Email Address" class="ios-input w-full p-4">
+                <input type="password" id="r-password" placeholder="Create Password" class="ios-input w-full p-4">
+                <button onclick="register()" id="regBtn" class="w-full bg-iosgreen hover:bg-green-600 text-white font-bold p-4 rounded-xl text-lg shadow-lg shadow-green-900/20 transition-all">Create Account</button>
             </div>
+            
+            <p class="text-center text-xs text-iossub mt-8 opacity-50">© 2026 Sumit Jha. Enterprise Edition.</p>
         </div>
 
-        <div id="admin-dashboard" class="hidden glass-panel p-6">
-            <h1 class="text-xl font-bold text-red-400 mb-4">🛡️ Admin Control</h1>
-            <div class="glass-input p-4 mb-4 border-emerald-500/30">
-                <p class="text-xs text-emerald-400 mb-2 font-bold uppercase">GPS Security Range</p>
-                <div class="flex gap-2">
-                    <select id="admin-range" class="glass-input w-full p-2 bg-black text-sm">
-                        <option value="50">50m (Strict)</option>
+        <div id="admin-dashboard" class="hidden flex-col h-full animate-fade-in pt-8">
+            <div class="flex justify-between items-center mb-6 px-2">
+                <h1 class="text-3xl font-bold">Admin</h1>
+                <button onclick="logout()" class="text-iosblue font-semibold">Exit</button>
+            </div>
+            
+            <div class="glass-panel p-5 mb-4">
+                <h3 class="text-xs font-bold text-iossub uppercase mb-3 ml-1">Configuration</h3>
+                <div class="flex items-center justify-between mb-4 bg-black/20 p-3 rounded-lg">
+                    <span class="text-sm font-medium">GPS Radius</span>
+                    <select id="admin-range" class="bg-transparent text-iosblue font-bold text-right outline-none">
+                        <option value="50">50m</option>
                         <option value="100">100m</option>
                         <option value="200">200m</option>
-                        <option value="5000">5km (Testing)</option>
+                        <option value="5000">5km (Dev)</option>
                     </select>
-                    <button onclick="saveRange()" class="bg-emerald-600 text-white px-4 rounded-lg font-bold text-sm">Save</button>
                 </div>
+                <button onclick="saveRange()" class="w-full bg-iosgray py-3 rounded-xl font-semibold text-sm">Save Changes</button>
             </div>
-            <button onclick="cleanOldData()" class="w-full bg-red-900/50 text-red-200 p-3 rounded-xl font-bold mb-4 text-sm">🗑️ Clean Database (>45 Days)</button>
-            <button onclick="logout()" class="w-full text-gray-500 text-sm">Logout</button>
+
+            <div class="glass-panel p-5">
+                <h3 class="text-xs font-bold text-iossub uppercase mb-3 ml-1">Database</h3>
+                <button onclick="cleanOldData()" class="w-full bg-iosred/20 text-iosred py-3 rounded-xl font-bold text-sm">Purge Old Records (>45 Days)</button>
+            </div>
         </div>
 
-        <div id="student-dashboard" class="hidden">
-            <div class="glass-panel p-5 mb-4 flex justify-between items-center">
+        <div id="student-dashboard" class="hidden flex-col h-full animate-fade-in pt-6">
+            <div class="flex justify-between items-end mb-6 px-2">
                 <div>
-                    <h1 class="text-xl font-black leading-none" id="st-name">...</h1>
-                    <p class="text-xs text-xaccent font-mono mt-1">Roll: <span id="st-roll">--</span></p>
+                    <p class="text-iossub text-sm font-semibold mb-1">Welcome back,</p>
+                    <h1 class="text-3xl font-bold text-white" id="st-name">Student</h1>
+                </div>
+                <div onclick="logout()" class="w-10 h-10 rounded-full bg-iosgray flex items-center justify-center cursor-pointer">
+                    <svg class="w-5 h-5 text-iossub" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                </div>
+            </div>
+
+            <div class="glass-panel p-5 mb-6 flex justify-between items-center">
+                <div>
+                    <p class="text-xs text-iossub font-bold uppercase">Roll Number</p>
+                    <p class="text-xl font-mono text-white" id="st-roll">--</p>
                 </div>
                 <div class="text-right">
-                    <div class="bg-white/10 px-3 py-1 rounded-lg">
-                        <p class="text-[10px] text-gray-400 uppercase">My Attendance</p>
-                        <p class="text-lg font-bold text-white" id="st-stats">--%</p>
-                    </div>
+                    <p class="text-xs text-iossub font-bold uppercase">Distance</p>
+                    <p class="text-xl font-bold text-iosgreen" id="live-range">...</p>
                 </div>
             </div>
 
-            <div class="glass-panel p-6 text-center">
-                <div id="active-class-ui" class="hidden">
-                    <div class="bg-emerald-900/20 border border-emerald-500/30 p-4 rounded-2xl mb-4 animate-pulse-slow">
-                        <h2 class="text-emerald-400 font-bold text-lg leading-tight" id="session-subject">...</h2>
-                        <p class="text-[10px] uppercase text-gray-400 mt-1">Live Session</p>
+            <div class="glass-panel p-6 flex-1 flex flex-col justify-center text-center relative overflow-hidden">
+                <div id="active-class-ui" class="hidden w-full">
+                    <div class="mb-8">
+                        <div class="w-16 h-16 bg-iosgreen/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                            <span class="text-2xl">📡</span>
+                        </div>
+                        <h2 class="text-2xl font-bold text-white mb-1" id="session-subject">...</h2>
+                        <p class="text-iosgreen font-semibold text-sm uppercase tracking-wide">Session Active</p>
                     </div>
-                    <input type="tel" id="pin-input" maxlength="4" placeholder="PIN" class="glass-input w-32 p-3 text-center text-2xl tracking-widest font-bold mb-4 mx-auto block focus:border-emerald-500">
-                    <button onclick="verifyAndMark()" id="markBtn" class="w-full btn-primary p-4 shadow-lg">📍 Verify Location</button>
+
+                    <div class="mb-6">
+                        <input type="tel" id="pin-input" maxlength="4" placeholder="PIN" class="ios-input w-40 p-4 text-center text-3xl font-bold tracking-[0.5em] bg-white/5 border-2 border-transparent focus:border-iosblue">
+                    </div>
+
+                    <button onclick="verifyAndMark()" id="markBtn" class="w-full bg-iosblue hover:bg-blue-500 text-white font-bold py-4 rounded-2xl text-lg shadow-xl shadow-blue-900/30 transition-all transform active:scale-95">
+                        Verify Location
+                    </button>
                 </div>
 
-                <div id="no-class-ui" class="py-8 text-gray-500 border-2 border-dashed border-white/10 rounded-2xl">
-                    <p class="text-sm">No active class.</p>
-                    <button onclick="checkSession()" class="text-xaccent text-xs mt-3 font-bold uppercase tracking-wider">Refresh Status</button>
-                </div>
-                
-                <div class="mt-4">
-                    <p class="text-[10px] text-gray-500">GPS Distance: <span id="live-range" class="font-bold text-gray-300">...</span></p>
+                <div id="no-class-ui" class="w-full">
+                    <div class="w-20 h-20 bg-iosgray rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-3xl grayscale">😴</span>
+                    </div>
+                    <h2 class="text-xl font-bold text-white mb-2">No Active Class</h2>
+                    <p class="text-iossub text-sm max-w-xs mx-auto">Relax. Check back when your teacher starts a session.</p>
+                    <button onclick="checkSession()" class="mt-6 text-iosblue font-semibold text-sm">Refresh Status</button>
                 </div>
             </div>
-            <button onclick="logout()" class="w-full text-gray-500 text-sm mt-6">Logout</button>
+            
+            <p class="text-center text-[10px] text-iossub py-4 opacity-40">GPS Range Limit: <span id="limit-display">50</span>m</p>
         </div>
 
-        <div id="teacher-dashboard" class="hidden">
-            <div class="glass-panel p-5 mb-4 border-l-4 border-xaccent flex justify-between items-center">
+        <div id="teacher-dashboard" class="hidden flex-col h-full animate-fade-in pt-6">
+            <div class="flex justify-between items-center mb-6 px-2">
                 <div>
-                    <h1 class="text-xl font-bold">👩‍🏫 Teacher</h1>
-                    <p class="text-xs text-gray-400" id="t-dept">...</p>
+                    <h1 class="text-2xl font-bold text-white">Teacher Panel</h1>
+                    <p class="text-xs text-iossub font-medium" id="t-dept">...</p>
                 </div>
-                <button onclick="logout()" class="text-xs bg-white/10 px-3 py-1 rounded-full">Logout</button>
+                <button onclick="logout()" class="text-iosred text-sm font-semibold">Sign Out</button>
             </div>
 
             <div class="glass-panel p-5 mb-6">
                 <div id="create-ui">
-                    <div class="grid grid-cols-2 gap-2 mb-2">
-                        <select id="t-year" class="glass-input p-2 text-sm" onchange="updateSubs()">
-                            <option value="">Year</option><option value="1">1st</option><option value="2">2nd</option><option value="3">3rd</option>
+                    <div class="flex gap-3 mb-3">
+                        <select id="t-year" class="ios-input flex-1 p-3 text-sm font-medium" onchange="updateSubs()">
+                            <option value="">Year</option><option value="1">1st Year</option><option value="2">2nd Year</option><option value="3">3rd Year</option>
                         </select>
-                        <select id="t-type" class="glass-input p-2 text-sm"><option>Theory</option><option>Practical</option><option>Posting</option></select>
+                        <select id="t-type" class="ios-input flex-1 p-3 text-sm font-medium">
+                            <option value="Theory">Theory</option><option value="Practical">Practical</option><option value="Posting">Posting</option>
+                        </select>
                     </div>
-                    <select id="t-sub" class="glass-input w-full p-2 mb-2 text-sm"><option>-- Select Year --</option></select>
                     
-                    <select id="t-duration" class="glass-input w-full p-2 mb-4 text-sm">
-                        <option value="1">1 Minute (Quick)</option>
-                        <option value="2">2 Minutes</option>
-                        <option value="5">5 Minutes</option>
-                        <option value="10">10 Minutes</option>
-                        <option value="60">1 Hour</option>
-                    </select>
+                    <select id="t-sub" class="ios-input w-full p-3 mb-3 text-sm font-medium"><option>Select Year First</option></select>
                     
-                    <button onclick="startClass()" class="w-full btn-primary p-3">Start Class</button>
+                    <div class="flex gap-3">
+                        <select id="t-duration" class="ios-input w-1/3 p-3 text-sm font-medium">
+                            <option value="2">2m</option><option value="5">5m</option><option value="10">10m</option><option value="60">1h</option>
+                        </select>
+                        <button onclick="startClass()" class="flex-1 bg-iosblue text-white font-bold rounded-xl text-sm shadow-lg">Start Session</button>
+                    </div>
                 </div>
                 
-                <div id="active-ui" class="hidden text-center">
-                    <p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Board PIN</p>
-                    <p id="pin-display" class="text-5xl font-mono font-black text-white mb-4 tracking-wider">----</p>
-                    <button onclick="endClass()" class="bg-red-600/80 hover:bg-red-600 text-white px-8 py-3 rounded-full font-bold shadow-lg transition">End Class</button>
+                <div id="active-ui" class="hidden text-center py-2">
+                    <p class="text-xs text-iossub font-bold uppercase tracking-widest mb-1">Board PIN</p>
+                    <p id="pin-display" class="text-6xl font-black text-white mb-6 tracking-wider font-mono">----</p>
+                    <button onclick="endClass()" class="w-full bg-iosred text-white py-3 rounded-xl font-bold shadow-lg shadow-red-900/20">End Session</button>
                 </div>
             </div>
 
-            <div class="glass-panel p-5 h-[500px] flex flex-col">
-                <div class="flex gap-4 border-b border-white/10 pb-2 mb-2">
-                    <button onclick="showTab('records')" id="btn-tab-records" class="text-sm font-bold text-white border-b-2 border-xaccent pb-1">Daily Logs</button>
-                    <button onclick="showTab('analytics')" id="btn-tab-analytics" class="text-sm font-bold text-gray-500 pb-1">Analytics</button>
-                </div>
-                
-                <div id="tab-records" class="flex-1 overflow-y-auto">
-                    <div id="rec-list" class="space-y-2 text-xs">Loading...</div>
-                </div>
-                
-                <div id="tab-analytics" class="hidden flex-1 overflow-y-auto flex flex-col">
-                    <div class="flex gap-2 mb-2">
-                        <input type="text" id="search-bar" onkeyup="filterTable()" placeholder="Search Name/Roll..." class="glass-input flex-1 p-2 text-xs">
-                        <button onclick="toggleDefaulters()" id="btn-defaulter" class="glass-input px-3 text-xs font-bold text-gray-400">Warning ⚠️</button>
+            <div class="glass-panel flex-1 flex flex-col overflow-hidden mb-4">
+                <div class="p-2 pb-0">
+                    <div class="segment-control mb-4">
+                        <div onclick="switchTab('records')" id="seg-records" class="segment-btn active">Logs</div>
+                        <div onclick="switchTab('analytics')" id="seg-analytics" class="segment-btn">Analytics</div>
                     </div>
-                    
-                    <div class="flex justify-between items-center mb-2">
-                        <button onclick="calcAnalytics()" class="text-xs text-xaccent underline">Refresh Data</button>
-                        <button onclick="exportCSV()" class="text-xs bg-green-900/50 text-green-200 px-2 py-1 rounded">📥 CSV</button>
+                </div>
+
+                <div id="view-records" class="flex-1 overflow-y-auto px-4 pb-4">
+                    <div id="rec-list" class="space-y-3"></div>
+                </div>
+
+                <div id="view-analytics" class="hidden flex-1 flex flex-col px-4 pb-4">
+                    <div class="flex gap-2 mb-3">
+                        <select id="analy-filter" onchange="renderAnalyticsTable()" class="ios-input flex-1 p-2 text-xs font-bold bg-white/5">
+                            <option value="All">All Types</option>
+                            <option value="Theory">Theory Only</option>
+                            <option value="Practical">Practical Only</option>
+                            <option value="Posting">Postings Only</option>
+                        </select>
+                        <button onclick="toggleDefaulters()" id="btn-defaulter" class="ios-input px-3 text-xs font-bold text-iossub">⚠️ &lt;75%</button>
+                        <button onclick="calcAnalytics()" class="ios-input px-3 text-xs">🔄</button>
                     </div>
 
-                    <table class="w-full text-xs text-left" id="analytics-table">
-                        <thead class="text-gray-400 border-b border-white/10 sticky top-0 bg-black">
-                            <tr><th class="p-2">Roll</th><th class="p-2">Name</th><th class="p-2 text-right">%</th></tr>
-                        </thead>
-                        <tbody id="analytics-body"></tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <div id="report-modal" class="fixed inset-0 bg-black/95 hidden flex items-center justify-center p-4 z-50">
-                <div class="glass-panel w-full max-w-lg h-[80vh] flex flex-col border border-white/20">
-                    <div class="p-4 border-b border-white/10 flex justify-between items-center">
-                        <h3 class="font-bold text-white">Attendance List</h3>
-                        <button onclick="document.getElementById('report-modal').classList.add('hidden')" class="text-2xl text-gray-400">&times;</button>
-                    </div>
-                    <div class="flex-1 overflow-y-auto p-2">
-                        <table class="w-full text-xs text-left text-gray-300">
-                            <thead class="text-gray-500 uppercase border-b border-white/10">
-                                <tr><th class="p-3">Roll</th><th class="p-3">Photo</th><th class="p-3">Name</th><th class="p-3 text-right">Time</th></tr>
+                    <div class="flex-1 overflow-y-auto rounded-xl bg-black/20">
+                        <table class="w-full text-xs text-left">
+                            <thead class="text-iossub font-semibold border-b border-white/5 sticky top-0 bg-[#1c1c1e] z-10">
+                                <tr><th class="p-3">Roll</th><th class="p-3">Name</th><th class="p-3 text-right">%</th></tr>
                             </thead>
-                            <tbody id="modal-body"></tbody>
+                            <tbody id="analytics-body" class="divide-y divide-white/5"></tbody>
                         </table>
                     </div>
+                    
+                    <button onclick="exportCSV()" class="mt-3 w-full bg-iosgreen/10 text-iosgreen py-2 rounded-lg text-xs font-bold">Download Report (CSV)</button>
                 </div>
             </div>
         </div>
+
+        <div id="report-modal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-end">
+            <div class="bg-[#1c1c1e] w-full h-[85vh] rounded-t-[30px] p-0 flex flex-col animate-slide-up shadow-2xl shadow-black">
+                <div class="p-4 border-b border-white/10 flex justify-between items-center bg-white/5 rounded-t-[30px]">
+                    <h3 class="font-bold text-lg text-white ml-2">Attendance List</h3>
+                    <button onclick="document.getElementById('report-modal').classList.add('hidden')" class="w-8 h-8 bg-iosgray rounded-full text-iossub font-bold">✕</button>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-iossub uppercase text-[10px]"><tr><th class="p-2">Roll</th><th class="p-2">Name</th><th class="p-2 text-right">Time</th></tr></thead>
+                        <tbody id="modal-body" class="divide-y divide-white/5 text-gray-300"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <input type="file" id="cam" accept="image/*" capture="user" class="hidden" onchange="uploadPhoto()">
@@ -221,36 +316,49 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // STATE
         let userRole="", userName="", userRoll="", teacherDept="", rangeLimit=50;
         let activeSessId=null, activePin=null;
-        let isDefaulterView = false; // Filter state
+        let analyticsData = []; // Store calculated data for filtering
+        let isDefaulterMode = false;
 
-        // AUTH UI
+        // --- UTILS ---
+        window.showToast = (msg, type='info') => {
+            const c = document.getElementById('toast-container');
+            const d = document.createElement('div');
+            const icon = type === 'success' ? '✅' : (type === 'error' ? '❌' : 'ℹ️');
+            d.className = 'toast';
+            d.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+            c.appendChild(d);
+            setTimeout(() => { d.style.opacity='0'; setTimeout(()=>d.remove(), 300) }, 3000);
+        };
+
+        // --- AUTH ---
         window.toggleAuth = (m) => {
-            document.getElementById('form-login').classList.toggle('hidden', m !== 'login');
-            document.getElementById('form-register').classList.toggle('hidden', m !== 'register');
-            document.getElementById('tab-login').className = m==='login'?"flex-1 py-2 text-xs font-bold rounded-lg bg-white/20 text-white":"flex-1 py-2 text-xs font-bold rounded-lg text-gray-500";
-            document.getElementById('tab-register').className = m==='register'?"flex-1 py-2 text-xs font-bold rounded-lg bg-white/20 text-white":"flex-1 py-2 text-xs font-bold rounded-lg text-gray-500";
+            document.getElementById('form-login').classList.toggle('hidden', m!=='login');
+            document.getElementById('form-register').classList.toggle('hidden', m!=='register');
+            document.getElementById('tab-login').className = m==='login' ? "flex-1 py-3 text-sm font-bold rounded-xl bg-white/10 text-white transition-all" : "flex-1 py-3 text-sm font-bold rounded-xl text-iossub transition-all";
+            document.getElementById('tab-register').className = m==='register' ? "flex-1 py-3 text-sm font-bold rounded-xl bg-white/10 text-white transition-all" : "flex-1 py-3 text-sm font-bold rounded-xl text-iossub transition-all";
         };
 
         window.login = () => {
-            document.getElementById('loginBtn').innerText = "...";
+            const btn = document.getElementById('loginBtn'); btn.innerText = "...";
             signInWithEmailAndPassword(auth, document.getElementById('l-email').value, document.getElementById('l-password').value)
-            .catch(e => { alert(e.message); document.getElementById('loginBtn').innerText = "Log In"; });
+            .catch(e => { showToast(e.message, 'error'); btn.innerText = "Sign In"; });
         };
 
         window.register = async () => {
             const n = document.getElementById('r-name').value, r = document.getElementById('r-roll').value;
-            if(!n || !r) return alert("Required");
+            if(!n || !r) return showToast("Details required", 'error');
             try {
                 const uc = await createUserWithEmailAndPassword(auth, document.getElementById('r-email').value, document.getElementById('r-password').value);
                 await setDoc(doc(db, "users", uc.user.uid), { name: n, roll: r, role: "student", createdAt: new Date() });
                 location.reload();
-            } catch(e) { alert(e.message); }
+            } catch(e) { showToast(e.message, 'error'); }
         };
         window.logout = () => signOut(auth).then(() => location.reload());
 
-        // INIT
+        // --- INIT ---
         onAuthStateChanged(auth, async (u) => {
             if(u) {
                 const snap = await getDoc(doc(db, "users", u.uid));
@@ -264,15 +372,19 @@
                 
                 if(userRole === 'student') {
                     document.getElementById('student-dashboard').classList.remove('hidden');
+                    document.getElementById('student-dashboard').classList.add('flex');
                     document.getElementById('st-name').innerText = userName;
                     document.getElementById('st-roll').innerText = userRoll;
-                    checkSession(); startGPS(); calcStudentStats(u.uid);
+                    document.getElementById('limit-display').innerText = rangeLimit;
+                    checkSession(); startGPS();
                 } else if(userRole === 'teacher') {
                     document.getElementById('teacher-dashboard').classList.remove('hidden');
-                    document.getElementById('t-dept').innerText = teacherDept || "All Subjects";
+                    document.getElementById('teacher-dashboard').classList.add('flex');
+                    document.getElementById('t-dept').innerText = teacherDept || "Subject Head";
                     loadRecords(); checkTeacherSession();
                 } else {
                     document.getElementById('admin-dashboard').classList.remove('hidden');
+                    document.getElementById('admin-dashboard').classList.add('flex');
                     document.getElementById('admin-range').value = rangeLimit;
                 }
             }
@@ -285,7 +397,7 @@
                     const d = getDist(p.coords.latitude, p.coords.longitude);
                     const el = document.getElementById('live-range');
                     el.innerText = Math.round(d) + "m";
-                    el.className = d < rangeLimit ? "text-lg font-bold text-green-400" : "text-lg font-bold text-red-400";
+                    el.className = d < rangeLimit ? "text-xl font-bold text-iosgreen" : "text-xl font-bold text-iosred";
                 }, null, {enableHighAccuracy: true});
             }
         }
@@ -305,43 +417,32 @@
             if(!found) { document.getElementById('active-class-ui').classList.add('hidden'); document.getElementById('no-class-ui').classList.remove('hidden'); }
         };
 
-        // NEW: STUDENT STATS
-        async function calcStudentStats(uid) {
-            // Count total sessions & total submissions (Simplified)
-            const subQ = query(collection(db, "submissions"), where("sid", "==", uid));
-            const subSnap = await getDocs(subQ);
-            const myCount = subSnap.size;
-            document.getElementById('st-stats').innerText = myCount > 0 ? "Active" : "0%";
-            // Accurate % requires knowing total classes which is heavy. "Active" is safer for MVP.
-        }
-
-        // 2-STEP VERIFY
         window.verifyAndMark = () => {
             const btn = document.getElementById('markBtn');
-            if(btn.innerText.includes("Take Selfie")) { document.getElementById('cam').click(); return; }
+            if(btn.innerText.includes("Selfie")) { document.getElementById('cam').click(); return; }
 
-            if(document.getElementById('pin-input').value !== activePin) return alert("Wrong PIN");
+            if(document.getElementById('pin-input').value !== activePin) return showToast("Wrong PIN", 'error');
             btn.innerText = "Checking..."; btn.disabled = true;
 
             navigator.geolocation.getCurrentPosition(async (p) => {
                 const d = getDist(p.coords.latitude, p.coords.longitude);
-                if(d > rangeLimit) { btn.innerText = "📍 Verify Location"; btn.disabled = false; return alert(`Too far! (${Math.round(d)}m)`); }
+                if(d > rangeLimit) { btn.innerText = "Verify Location"; btn.disabled = false; return showToast(`Too far (${Math.round(d)}m)`, 'error'); }
                 
                 const uRef = doc(db, "users", auth.currentUser.uid);
                 const uSnap = await getDoc(uRef);
                 const did = navigator.userAgent + screen.width; 
                 
-                if(uSnap.data().deviceId && uSnap.data().deviceId !== did) { alert("Use registered phone!"); location.reload(); return; }
+                if(uSnap.data().deviceId && uSnap.data().deviceId !== did) { showToast("Use registered phone", 'error'); location.reload(); return; }
                 if(!uSnap.data().deviceId) await updateDoc(uRef, {deviceId: did});
 
-                btn.innerText = "📸 Take Selfie"; btn.className = "w-full bg-green-500 text-white font-bold p-4 rounded-full shadow-lg"; btn.disabled = false;
-            }, () => { alert("GPS Error"); btn.innerText = "📍 Verify Location"; btn.disabled = false; });
+                btn.innerText = "📸 Take Selfie"; btn.style.backgroundColor = "#30d158"; btn.disabled = false;
+            }, () => { showToast("Enable GPS", 'error'); btn.innerText = "Verify Location"; btn.disabled = false; });
         };
 
         window.uploadPhoto = () => {
             const f = document.getElementById('cam').files[0];
             if(!f) return;
-            document.getElementById('markBtn').innerText = "⏳ Uploading...";
+            document.getElementById('markBtn').innerText = "Uploading...";
             const r = new FileReader();
             r.readAsDataURL(f);
             r.onload = (e) => {
@@ -357,7 +458,7 @@
 
         async function submit(b64) {
             await addDoc(collection(db, "submissions"), { sid: auth.currentUser.uid, name: userName, roll: userRoll, sessId: activeSessId, photo: b64, time: new Date() });
-            const btn = document.getElementById('markBtn'); btn.innerText = "✅ DONE!"; btn.className = "w-full bg-blue-600 text-white font-bold p-4 rounded-full";
+            showToast("Attendance Marked!", 'success');
             setTimeout(() => location.reload(), 1500);
         }
 
@@ -373,10 +474,13 @@
 
         window.startClass = async () => {
             const sub = document.getElementById('t-sub').value, dur = parseInt(document.getElementById('t-duration').value);
-            if(!sub || sub.includes("Select") || sub.includes("Not")) return alert("Check Subject");
+            if(!sub || sub.includes("Select") || sub.includes("Not")) return showToast("Check Subject", 'error');
             const end = new Date(); end.setMinutes(end.getMinutes() + dur);
             const pin = Math.floor(1000 + Math.random() * 9000).toString();
-            const ref = await addDoc(collection(db, "sessions"), { tid: auth.currentUser.uid, sub: sub + " (" + document.getElementById('t-type').value + ")", start: new Date(), end: end, active: true, pin: pin });
+            // SAVE TYPE IN SUBJECT STRING FOR PARSING
+            const fullSub = `${sub} | ${document.getElementById('t-type').value}`;
+            
+            const ref = await addDoc(collection(db, "sessions"), { tid: auth.currentUser.uid, sub: fullSub, start: new Date(), end: end, active: true, pin: pin });
             activeSessId = ref.id;
             document.getElementById('create-ui').classList.add('hidden'); document.getElementById('active-ui').classList.remove('hidden'); document.getElementById('pin-display').innerText = pin;
         };
@@ -395,90 +499,121 @@
             let docs = []; snap.forEach(d => docs.push({id: d.id, ...d.data()}));
             docs.sort((a,b) => b.start.seconds - a.start.seconds);
             docs.forEach(d => {
-                const div = document.createElement('div'); div.className = "bg-white/10 p-3 rounded-lg flex justify-between cursor-pointer mb-2";
-                div.innerHTML = `<span>${d.sub}</span><span class="text-gray-400 text-[10px]">${d.start.toDate().toLocaleString()}</span>`;
+                const div = document.createElement('div'); div.className = "bg-white/5 p-4 rounded-xl flex justify-between cursor-pointer active:bg-white/10 transition";
+                div.innerHTML = `<div><p class="font-bold text-sm text-white">${d.sub}</p><p class="text-xs text-iossub mt-1">${d.start.toDate().toLocaleString()}</p></div><div class="text-iosblue text-xl">›</div>`;
                 div.onclick = () => showReport(d.id); list.appendChild(div);
             });
         }
 
         window.showReport = async (sid) => {
             document.getElementById('report-modal').classList.remove('hidden');
-            const b = document.getElementById('modal-body'); b.innerHTML = "Loading...";
+            const b = document.getElementById('modal-body'); b.innerHTML = "<tr><td colspan='3' class='p-4 text-center'>Loading...</td></tr>";
             const q = query(collection(db, "submissions"), where("sessId", "==", sid));
             const snap = await getDocs(q); b.innerHTML = "";
             let rows = []; snap.forEach(d => rows.push(d.data()));
             rows.sort((a,b) => (parseInt(a.roll)||0) - (parseInt(b.roll)||0));
-            rows.forEach(d => { b.innerHTML += `<tr class="border-b border-white/5"><td class="p-3 text-blue-300 font-mono">${d.roll}</td><td class="p-3"><img src="${d.photo}" class="w-8 h-8 rounded-full bg-gray-500" onclick="window.open(this.src)"></td><td class="p-3">${d.name}</td><td class="p-3 text-right text-xs">${d.time.toDate().toLocaleTimeString()}</td></tr>`; });
+            rows.forEach(d => { b.innerHTML += `<tr class="border-b border-white/5"><td class="p-2 font-mono text-iosblue">${d.roll}</td><td class="p-2 font-bold text-white">${d.name}</td><td class="p-2 text-right text-xs text-iossub">${d.time.toDate().toLocaleTimeString()}</td></tr>`; });
         };
 
-        // --- NEW ANALYTICS ---
+        // --- SEGREGATED ANALYTICS ---
         window.calcAnalytics = async () => {
-            const tbody = document.getElementById('analytics-body'); tbody.innerHTML = "<tr><td colspan='3'>Calculating...</td></tr>";
+            showToast("Updating Analytics...", "info");
             const sessQ = query(collection(db, "sessions"), where("tid", "==", auth.currentUser.uid));
             const sessSnap = await getDocs(sessQ);
-            let sessIds = []; sessSnap.forEach(d => sessIds.push(d.id));
-            if(sessIds.length===0) { tbody.innerHTML="No data"; return; }
+            
+            // 1. Map Sessions by Type
+            const sessions = { Theory: [], Practical: [], Posting: [], All: [] };
+            sessSnap.forEach(d => {
+                const s = d.data();
+                const type = s.sub.split('|')[1]?.trim() || "Theory"; // Extract type
+                if(sessions[type]) sessions[type].push(d.id);
+                sessions.All.push(d.id);
+            });
 
+            // 2. Get Submissions
             const subQ = query(collection(db, "submissions"));
             const subSnap = await getDocs(subQ);
-            const stats = {}; 
+            
+            // 3. Process Data
+            const students = {}; // { "Roll_Name": { Theory: 0, Practical: 0, Posting: 0 } }
+            
             subSnap.forEach(d => {
-                const dat = d.data();
-                if(sessIds.includes(dat.sessId)) { const k = `${dat.roll}__${dat.name}`; stats[k] = (stats[k]||0)+1; }
+                const sub = d.data();
+                const k = `${sub.roll}__${sub.name}`;
+                if(!students[k]) students[k] = { Theory: 0, Practical: 0, Posting: 0, All: 0 };
+                
+                // Find which type this submission belongs to
+                if(sessions.Theory.includes(sub.sessId)) students[k].Theory++;
+                if(sessions.Practical.includes(sub.sessId)) students[k].Practical++;
+                if(sessions.Posting.includes(sub.sessId)) students[k].Posting++;
+                if(sessions.All.includes(sub.sessId)) students[k].All++;
             });
 
-            tbody.innerHTML = "";
-            const total = sessIds.length;
-            Object.keys(stats).sort((a,b) => parseInt(a)-parseInt(b)).forEach(k => {
-                const [r, n] = k.split('__'), c = stats[k], pct = Math.round((c/total)*100);
-                const color = pct < 75 ? "status-red" : "status-green";
-                tbody.innerHTML += `<tr class="border-b border-white/5 item-row"><td class="p-2 font-mono">${r}</td><td class="p-2">${n}</td><td class="p-2 text-right ${color} pct-cell">${pct}%</td></tr>`;
+            // Store Globally for Filtering
+            analyticsData = Object.keys(students).map(k => {
+                const [roll, name] = k.split('__');
+                return { roll, name, counts: students[k] };
             });
+            
+            // Store Totals for % Calculation
+            window.totalClasses = {
+                Theory: sessions.Theory.length,
+                Practical: sessions.Practical.length,
+                Posting: sessions.Posting.length,
+                All: sessions.All.length
+            };
+
+            renderAnalyticsTable();
         };
 
-        // NEW: SEARCH & FILTER
-        window.filterTable = () => {
-            const term = document.getElementById('search-bar').value.toLowerCase();
-            document.querySelectorAll('.item-row').forEach(row => {
-                row.style.display = row.innerText.toLowerCase().includes(term) ? '' : 'none';
+        window.renderAnalyticsTable = () => {
+            const type = document.getElementById('analy-filter').value;
+            const total = window.totalClasses[type] || 1;
+            const tbody = document.getElementById('analytics-body');
+            tbody.innerHTML = "";
+
+            analyticsData.sort((a,b) => parseInt(a.roll) - parseInt(b.roll)).forEach(st => {
+                const attended = st.counts[type];
+                const pct = total === 0 ? 0 : Math.round((attended / total) * 100);
+                
+                if(isDefaulterMode && pct >= 75) return; // Skip if filter active
+
+                const color = pct < 75 ? "text-iosred" : "text-iosgreen";
+                tbody.innerHTML += `<tr class="border-b border-white/5"><td class="p-3 font-mono text-iossub">${st.roll}</td><td class="p-3 text-white font-medium">${st.name}</td><td class="p-3 text-right font-bold ${color}">${pct}%</td></tr>`;
             });
         };
 
         window.toggleDefaulters = () => {
-            isDefaulterView = !isDefaulterView;
-            const btn = document.getElementById('btn-defaulter');
-            btn.className = isDefaulterView ? "glass-input px-3 text-xs font-bold text-red-400 border border-red-500" : "glass-input px-3 text-xs font-bold text-gray-400";
-            
-            document.querySelectorAll('.item-row').forEach(row => {
-                const pct = parseInt(row.querySelector('.pct-cell').innerText);
-                if(isDefaulterView) row.style.display = pct < 75 ? '' : 'none';
-                else row.style.display = '';
-            });
+            isDefaulterMode = !isDefaulterMode;
+            document.getElementById('btn-defaulter').className = isDefaulterMode ? "ios-input px-3 text-xs font-bold text-iosred border border-iosred" : "ios-input px-3 text-xs font-bold text-iossub";
+            renderAnalyticsTable();
         };
 
         window.exportCSV = () => {
-            let csv = "Roll,Name,Percentage\n";
-            document.querySelectorAll('.item-row').forEach(row => {
-                const cols = row.querySelectorAll('td');
-                if(row.style.display !== 'none') csv += `${cols[0].innerText},${cols[1].innerText},${cols[2].innerText}\n`;
+            let csv = "Roll,Name,Type,Percentage\n";
+            const type = document.getElementById('analy-filter').value;
+            const total = window.totalClasses[type] || 1;
+            analyticsData.forEach(st => {
+                const pct = Math.round((st.counts[type]/total)*100);
+                csv += `${st.roll},${st.name},${type},${pct}%\n`;
             });
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = 'attendance_report.csv'; a.click();
+            const b = new Blob([csv],{type:'text/csv'});
+            const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'GAC_Report.csv'; a.click();
         };
 
-        window.showTab = (t) => {
-            document.getElementById('tab-records').classList.toggle('hidden', t!=='records');
-            document.getElementById('tab-analytics').classList.toggle('hidden', t!=='analytics');
-            document.getElementById('btn-tab-records').className = t==='records'?"text-sm font-bold text-white border-b-2 border-xaccent pb-1":"text-sm font-bold text-gray-500 pb-1";
-            document.getElementById('btn-tab-analytics').className = t==='analytics'?"text-sm font-bold text-white border-b-2 border-xaccent pb-1":"text-sm font-bold text-gray-500 pb-1";
+        // UI TABS
+        window.switchTab = (t) => {
+            document.getElementById('view-records').classList.toggle('hidden', t!=='records');
+            document.getElementById('view-analytics').classList.toggle('hidden', t!=='analytics');
+            document.getElementById('seg-records').className = t==='records' ? "segment-btn active" : "segment-btn";
+            document.getElementById('seg-analytics').className = t==='analytics' ? "segment-btn active" : "segment-btn";
         };
 
-        window.saveRange = () => { setDoc(doc(db, "settings", "config"), {allowedRange: parseInt(document.getElementById('admin-range').value)}, {merge:true}); alert("Saved!"); };
+        window.saveRange = () => { setDoc(doc(db, "settings", "config"), {allowedRange: parseInt(document.getElementById('admin-range').value)}, {merge:true}); showToast("Saved"); };
         window.cleanOldData = async () => {
             const d = new Date(); d.setDate(d.getDate()-45);
             const q = query(collection(db, "submissions"), where("time", "<", d));
-            const s = await getDocs(q); s.forEach(x => deleteDoc(x.ref)); alert("Cleaned " + s.size);
+            const s = await getDocs(q); s.forEach(x => deleteDoc(x.ref)); showToast("Cleaned " + s.size);
         };
 
         function getDist(lat1, lon1) {
