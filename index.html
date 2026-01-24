@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GAC Nagpur Portal</title>
+    <title>GAC Nagpur</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -92,13 +92,15 @@
                 <input type="password" id="r-password" placeholder="Create Password" class="ios-input w-full p-4">
                 <button onclick="register()" id="regBtn" class="w-full bg-iosgreen hover:bg-green-600 text-white font-bold p-4 rounded-xl text-lg shadow-lg transition-all active:scale-95">Create Account</button>
             </div>
-            <p class="text-center text-xs text-iossub mt-8 opacity-50">© 2026 Sumit Jha. Mega-Suite Edition.</p>
+            <p class="text-center text-xs text-iossub mt-8 opacity-50">© 2026 Sumit Jha. Ironclad Edition.</p>
         </div>
 
         <div id="admin-dashboard" class="hidden flex-col h-full pt-8">
             <div class="flex justify-between items-center mb-6 px-2">
                 <h1 class="text-3xl font-bold">Admin Panel</h1>
-                <button onclick="logout()" class="text-iosblue font-semibold">Exit</button>
+                <button onclick="logout()" class="bg-iosred/10 text-iosred p-2 rounded-full hover:bg-iosred/20 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" /></svg>
+                </button>
             </div>
             
             <div class="glass-panel p-5 mb-4">
@@ -107,11 +109,9 @@
                     <input type="email" id="adm-search-email" placeholder="Search Student Email" class="ios-input flex-1 p-3 text-sm">
                     <button onclick="searchUser()" class="bg-iosblue text-white px-4 rounded-xl font-bold">🔍</button>
                 </div>
-                
                 <div id="user-manage-ui" class="hidden bg-gray-100 dark:bg-white/5 p-3 rounded-xl">
                     <p class="font-bold text-sm mb-1" id="adm-uname">Student Name</p>
                     <p class="text-xs text-iossub mb-3" id="adm-uid">UID: ...</p>
-                    
                     <div class="flex gap-2 mb-2">
                         <input type="number" id="adm-new-roll" placeholder="New Roll" class="ios-input w-20 p-2 text-center text-sm">
                         <button onclick="updateUserRoll()" class="flex-1 bg-iosgreen/20 text-iosgreen font-bold rounded-lg text-xs">Update Roll</button>
@@ -139,7 +139,9 @@
                     <p class="text-iossub text-sm font-semibold">Hello,</p>
                     <h1 class="text-3xl font-bold" id="st-name">Student</h1>
                 </div>
-                <button onclick="logout()" class="text-sm text-iosred font-bold">Logout</button>
+                <button onclick="logout()" class="bg-iosred/10 text-iosred p-2 rounded-full hover:bg-iosred/20 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" /></svg>
+                </button>
             </div>
 
             <div class="glass-panel p-5 mb-6 flex justify-between items-center">
@@ -161,14 +163,14 @@
                     <button onclick="checkSession()" class="mt-4 text-iosblue font-semibold text-sm">Refresh Status</button>
                 </div>
             </div>
-            
-            <p class="text-center text-[10px] text-iossub py-4 opacity-40">GPS Range Limit: <span id="limit-display">50</span>m</p>
         </div>
 
         <div id="teacher-dashboard" class="hidden flex-col h-full pt-6">
             <div class="flex justify-between items-center mb-6 px-2">
                 <div><h1 class="text-2xl font-bold">Teacher</h1><p class="text-xs text-iossub" id="t-dept">...</p></div>
-                <button onclick="logout()" class="text-iosred text-sm font-semibold">Sign Out</button>
+                <button onclick="logout()" class="bg-iosred/10 text-iosred p-2 rounded-full hover:bg-iosred/20 transition shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" /></svg>
+                </button>
             </div>
 
             <div class="glass-panel p-5 mb-6">
@@ -197,7 +199,6 @@
                         <div onclick="switchTab('analytics')" id="seg-analytics" class="segment-btn">Analytics</div>
                     </div>
                 </div>
-                
                 <div id="view-records" class="flex-1 overflow-y-auto px-4 pb-4">
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-xs text-iossub font-bold">RECENT CLASSES</span>
@@ -205,18 +206,12 @@
                     </div>
                     <div id="rec-list" class="space-y-3"></div>
                 </div>
-                
                 <div id="view-analytics" class="hidden flex-1 flex flex-col px-4 pb-4">
                     <div class="flex gap-2 mb-3">
                         <select id="analy-filter" onchange="renderAnalyticsTable()" class="ios-input flex-1 p-2 text-xs font-bold"><option value="All">All Types</option><option value="Theory">Theory</option><option value="Practical">Practical</option></select>
                         <button onclick="toggleDefaulters()" id="btn-defaulter" class="ios-input px-3 text-xs font-bold text-iossub">⚠️ &lt;75%</button>
                         <button onclick="calcAnalytics()" class="ios-input px-3 text-xs">🔄</button>
                     </div>
-                    
-                    <div class="flex gap-2 mb-2">
-                        <input type="text" id="search-bar" onkeyup="filterTable()" placeholder="Search Student..." class="ios-input w-full p-2 text-xs">
-                    </div>
-
                     <div class="flex-1 overflow-y-auto rounded-xl bg-gray-100 dark:bg-black/20">
                         <table class="w-full text-xs text-left"><thead class="text-iossub font-semibold border-b border-gray-300 dark:border-white/5 sticky top-0 bg-gray-200 dark:bg-[#1c1c1e] z-10"><tr><th class="p-3">Roll</th><th class="p-3">Name</th><th class="p-3 text-right">%</th></tr></thead><tbody id="analytics-body" class="divide-y divide-gray-300 dark:divide-white/5"></tbody></table>
                     </div>
