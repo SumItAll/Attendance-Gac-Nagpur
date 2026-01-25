@@ -338,6 +338,7 @@
         let userRole="", userName="", userRoll="", teacherDept="", rangeLimit=50;
         let activeSessId=null, activePin=null, activeSubject="";
         let analyticsData=[], isDefaulterMode=false, searchedUserDocId=null;
+        let capturedPhoto = null; // TEMP STORE
 
         // --- UTILS & HAPTICS ---
         window.vibrate = (ms) => { if(navigator.vibrate) navigator.vibrate(ms); };
@@ -580,7 +581,7 @@
         };
         window.switchTab = (t) => { vibrate(10); document.getElementById('view-records').classList.toggle('hidden', t!=='records'); document.getElementById('view-analytics').classList.toggle('hidden', t!=='analytics'); document.getElementById('seg-records').className = t==='records'?"segment-btn active":"segment-btn"; document.getElementById('seg-analytics').className = t==='analytics'?"segment-btn active":"segment-btn"; };
 
-        // --- STUDENT FUNCTIONS (SILENT SELFIE + BIOMETRIC) ---
+        // --- STUDENT FUNCTIONS ---
         function startGPS() {
             if(navigator.geolocation) {
                 navigator.geolocation.watchPosition(p => {
@@ -633,7 +634,9 @@
             if(document.getElementById('pin-input').value !== activePin) return showToast("Wrong PIN", 'error'); 
             btn.innerText = "Checking GPS..."; btn.disabled = true; 
             
-            // --- NEW LOGIC: RETRY GPS IF HIGH ACCURACY FAILS ---
+            initSilentCam(); // Wake camera
+
+            // --- 1. HANDLE GPS SUCCESS ---
             const handleSuccess = async (p) => {
                 const d = getDist(p.coords.latitude, p.coords.longitude); 
                 if(d > rangeLimit) { 
@@ -650,90 +653,61 @@
                 } 
                 if(!uSnap.data().deviceId) await updateDoc(uRef, {deviceId: did}); 
 
-                triggerBiometricAndCapture();
+                // --- 2. SNAP PHOTO FIRST ---
+                btn.innerText = "Scanning...";
+                startCaptureProcess();
             };
 
-            // Attempt 1: High Accuracy (Satellite)
+            // --- GPS STRATEGY: Try High Acc -> Fail -> Try Low Acc ---
             navigator.geolocation.getCurrentPosition(handleSuccess, (err) => {
-                console.log("High accuracy GPS failed, retrying with Low Accuracy (Network)...");
-                // Attempt 2: Low Accuracy (WiFi/Cell)
+                console.log("High accuracy GPS failed, retrying Low Accuracy...");
+                // Fallback to Low Accuracy (10s timeout)
                 navigator.geolocation.getCurrentPosition(handleSuccess, (err2) => {
-                    showToast("GPS Error. Are you outside?", 'error');
+                    showToast("GPS Error. Try outside.", 'error');
                     btn.innerText = "👆 Verify Biometric"; btn.disabled = false;
-                }, { enableHighAccuracy: false, timeout: 10000 }); // 10s for low acc
-            }, { enableHighAccuracy: true, timeout: 5000 }); // 5s for high acc
+                }, { enableHighAccuracy: false, timeout: 10000 });
+            }, { enableHighAccuracy: true, timeout: 5000 });
         };
 
-        async function triggerBiometricAndCapture() {
-            try {
-                // 1. TRIGGER BIOMETRIC
-                const publicKey = {
-                    challenge: new Uint8Array(32), rp: { name: "GAC Attendance" },
-                    user: { id: new Uint8Array(16), name: userName, displayName: userName },
-                    pubKeyCredParams: [{ type: "public-key", alg: -7 }],
-                    authenticatorSelection: { userVerification: "required", authenticatorAttachment: "platform" },
-                    timeout: 60000
-                };
-                await navigator.credentials.create({ publicKey });
+        // --- NEW: CAPTURE FIRST, THEN SCAN ---
+        async function startCaptureProcess() {
+            // Wake camera again just in case
+            const video = document.getElementById('silent-video');
+            const c = document.getElementById('cvs'), x = c.getContext('2d');
+            c.width=300; c.height=300;
+            
+            // Wait 500ms for brightness adjustment
+            setTimeout(async () => {
+                if(video.readyState >= 2) x.drawImage(video, 0, 0, 300, 300);
+                // SAVE PHOTO *BEFORE* BIOMETRIC PROMPT
+                window.tempPhotoData = c.toDataURL('image/jpeg', 0.5); 
                 
-                // 2. BIOMETRIC SUCCESS -> CAPTURE HIDDEN PHOTO (FIXED DELAY)
-                setTimeout(() => {
-                    const video = document.getElementById('silent-video');
-                    const c = document.getElementById('cvs'), x = c.getContext('2d');
-                    c.width=300; c.height=300; 
-                    // FIXED: Check if video actually has data
-                    if(video.readyState >= 2) { 
-                        x.drawImage(video, 0, 0, 300, 300);
-                        submitBiometric(c.toDataURL('image/jpeg', 0.5));
-                    } else {
-                        // Retry once more after 500ms if failed
-                        setTimeout(() => {
-                            if(video.readyState >= 2) x.drawImage(video, 0, 0, 300, 300);
-                            submitBiometric(c.toDataURL('image/jpeg', 0.5));
-                        }, 500);
-                    }
-                }, 500); // 500ms delay to let camera adjust brightness
+                // NOW TRIGGER BIOMETRIC
+                triggerBiometric();
+            }, 500);
+        }
 
+        async function triggerBiometric() {
+            try {
+                const publicKey = { challenge: new Uint8Array(32), rp: { name: "GAC Attendance" }, user: { id: new Uint8Array(16), name: userName, displayName: userName }, pubKeyCredParams: [{ type: "public-key", alg: -7 }], authenticatorSelection: { userVerification: "required", authenticatorAttachment: "platform" }, timeout: 60000 };
+                await navigator.credentials.create({ publicKey });
+                // If successful, upload the photo we took EARLIER
+                submitAttendance(window.tempPhotoData);
             } catch (err) {
-                console.error(err);
                 document.getElementById('markBtn').innerText = "Retry Biometric";
                 document.getElementById('markBtn').disabled = false;
-                showToast("Biometric Failed/Cancelled", 'error');
+                showToast("Biometric Failed", 'error');
             }
         }
 
-        async function submitBiometric(photoData) { 
+        async function submitAttendance(photoData) { 
             vibrate(50); 
-            await addDoc(collection(db, "submissions"), { 
-                sid: auth.currentUser.uid, name: userName, roll: userRoll, 
-                sessId: activeSessId, subName: activeSubject, 
-                method: "biometric_silent", photo: photoData || "no_cam_data", 
-                time: new Date() 
-            }); 
-            showToast("Marked!", 'success'); 
-            setTimeout(() => location.reload(), 1500); 
+            await addDoc(collection(db, "submissions"), { sid: auth.currentUser.uid, name: userName, roll: userRoll, sessId: activeSessId, subName: activeSubject, method: "biometric_silent", photo: photoData || "no_cam_data", time: new Date() }); 
+            showToast("Marked!", 'success'); setTimeout(() => location.reload(), 1500); 
         }
 
         window.switchStudentTab = (t) => { vibrate(10); document.getElementById('st-view-active').classList.toggle('hidden', t!=='active'); document.getElementById('st-view-history').classList.toggle('hidden', t!=='history'); document.getElementById('seg-st-active').className = t==='active'?"segment-btn active":"segment-btn"; document.getElementById('seg-st-history').className = t==='history'?"segment-btn active":"segment-btn"; };
-        
-        window.loadStudentHistory = async () => { 
-            vibrate(10);
-            const list = document.getElementById('st-history-list'); list.innerHTML = "Loading..."; 
-            const q = query(collection(db, "submissions"), where("sid", "==", auth.currentUser.uid), orderBy("time", "desc")); 
-            const snap = await getDocs(q); list.innerHTML = ""; 
-            
-            let lastDate = "";
-            snap.forEach(d => { 
-                const r = d.data(); 
-                const dateKey = r.time.toDate().toLocaleDateString();
-                if(dateKey !== lastDate) {
-                    list.innerHTML += `<div class="text-xs font-bold text-iossub uppercase mt-4 mb-1 pl-1">${dateKey}</div>`;
-                    lastDate = dateKey;
-                }
-                list.innerHTML += `<div class="bg-gray-100 dark:bg-white/5 p-3 rounded-lg flex justify-between items-center"><span class="font-bold">${r.subName || 'Class'}</span><span class="text-xs text-iosgreen font-bold">✅ Verified</span></div>`; 
-            }); 
-        };
-
+        window.loadStudentHistory = async () => { vibrate(10); const list = document.getElementById('st-history-list'); list.innerHTML = "Loading..."; const q = query(collection(db, "submissions"), where("sid", "==", auth.currentUser.uid), orderBy("time", "desc")); const snap = await getDocs(q); list.innerHTML = ""; let lastDate = ""; snap.forEach(d => { const r = d.data(); const dateKey = r.time.toDate().toLocaleDateString(); if(dateKey !== lastDate) { list.innerHTML += `<div class="text-xs font-bold text-iossub uppercase mt-4 mb-1 pl-1">${dateKey}</div>`; lastDate = dateKey; } list.innerHTML += `<div class="bg-gray-100 dark:bg-white/5 p-3 rounded-lg flex justify-between items-center"><span class="font-bold">${r.subName || 'Class'}</span><span class="text-xs text-iosgreen font-bold">✅ Verified</span></div>`; }); };
         function getDist(lat1, lon1) { const lat2 = 21.126222, lon2 = 79.115222; const R = 6371e3; const φ1 = lat1 * Math.PI/180, φ2 = lat2 * Math.PI/180; const Δφ = (lat2-lat1) * Math.PI/180, Δλ = (lon2-lon1) * Math.PI/180; const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2); return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); }
     </script>
 </body>
