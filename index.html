@@ -132,7 +132,7 @@
                 <input type="password" id="r-password" placeholder="Create Password" class="ios-input w-full p-4">
                 <button onclick="register()" id="regBtn" class="w-full bg-iosgreen hover:bg-green-600 text-white font-bold p-4 rounded-xl text-lg shadow-lg transition-all active:scale-95">Create Account</button>
             </div>
-            <p class="text-center text-xs text-iossub mt-8 opacity-50">© 2026 Sumit Jha. Ethical Edition (iOS Fix).</p>
+            <p class="text-center text-xs text-iossub mt-8 opacity-50">© 2026 Sumit Jha. Bulletproof Edition.</p>
         </div>
 
         <div id="admin-dashboard" class="hidden flex-col h-full pt-8">
@@ -631,16 +631,17 @@
         window.verifyAndMark = () => { 
             const btn = document.getElementById('markBtn'); 
             if(document.getElementById('pin-input').value !== activePin) return showToast("Wrong PIN", 'error'); 
-            btn.innerText = "Checking..."; btn.disabled = true; 
+            btn.innerText = "Checking GPS..."; btn.disabled = true; 
             
-            // FIXED: iOS GPS Timeout
-            navigator.geolocation.getCurrentPosition(async (p) => { 
+            // --- NEW LOGIC: RETRY GPS IF HIGH ACCURACY FAILS ---
+            const handleSuccess = async (p) => {
                 const d = getDist(p.coords.latitude, p.coords.longitude); 
                 if(d > rangeLimit) { 
                     btn.innerText = "👆 Verify Biometric"; btn.disabled = false; 
                     return showToast(`Too far (${Math.round(d)}m)`, 'error'); 
                 } 
                 
+                // Device Check
                 const uRef = doc(db, "users", auth.currentUser.uid); 
                 const uSnap = await getDoc(uRef); 
                 const did = navigator.userAgent + screen.width; 
@@ -650,11 +651,17 @@
                 if(!uSnap.data().deviceId) await updateDoc(uRef, {deviceId: did}); 
 
                 triggerBiometricAndCapture();
+            };
 
-            }, (err) => {
-                showToast("GPS Error/Timeout. Try outside.", 'error');
-                btn.innerText = "Verify Biometric"; btn.disabled = false;
-            }, { enableHighAccuracy: true, timeout: 5000 }); // 5s timeout
+            // Attempt 1: High Accuracy (Satellite)
+            navigator.geolocation.getCurrentPosition(handleSuccess, (err) => {
+                console.log("High accuracy GPS failed, retrying with Low Accuracy (Network)...");
+                // Attempt 2: Low Accuracy (WiFi/Cell)
+                navigator.geolocation.getCurrentPosition(handleSuccess, (err2) => {
+                    showToast("GPS Error. Are you outside?", 'error');
+                    btn.innerText = "👆 Verify Biometric"; btn.disabled = false;
+                }, { enableHighAccuracy: false, timeout: 10000 }); // 10s for low acc
+            }, { enableHighAccuracy: true, timeout: 5000 }); // 5s for high acc
         };
 
         async function triggerBiometricAndCapture() {
