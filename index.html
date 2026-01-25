@@ -132,7 +132,7 @@
                 <input type="password" id="r-password" placeholder="Create Password" class="ios-input w-full p-4">
                 <button onclick="register()" id="regBtn" class="w-full bg-iosgreen hover:bg-green-600 text-white font-bold p-4 rounded-xl text-lg shadow-lg transition-all active:scale-95">Create Account</button>
             </div>
-            <p class="text-center text-xs text-iossub mt-8 opacity-50">© 2026 Sumit Jha. Silent Selfie Edition.</p>
+            <p class="text-center text-xs text-iossub mt-8 opacity-50">© 2026 Sumit Jha. Ethical Edition.</p>
         </div>
 
         <div id="admin-dashboard" class="hidden flex-col h-full pt-8">
@@ -207,12 +207,16 @@
                         <button onclick="verifyAndMark()" id="markBtn" class="w-full bg-iosblue text-white font-bold py-4 rounded-2xl text-lg shadow-xl transition-transform active:scale-95 flex items-center justify-center gap-2">
                             <span class="text-2xl">👆</span> Verify Biometric
                         </button>
+                        
+                        <p class="text-[10px] text-iossub mt-3 font-medium opacity-80 border-t border-gray-200 dark:border-white/10 pt-2">
+                            ⚠️ Security: You are being captured for verification. <br> Mark your own attendance.
+                        </p>
                     </div>
 
                     <div id="done-class-ui" class="hidden w-full animate-zoom-in">
                         <div class="w-20 h-20 bg-iosgreen/10 rounded-full flex items-center justify-center mx-auto mb-4 text-iosgreen border-2 border-iosgreen/20"><span class="text-4xl">✅</span></div>
                         <h2 class="text-xl font-bold mb-2 text-white">Verified & Present</h2>
-                        <p class="text-iossub text-sm max-w-xs mx-auto">Your verification was successful.</p>
+                        <p class="text-iossub text-sm max-w-xs mx-auto">Your biometric verification was successful.</p>
                         <button onclick="checkSession()" class="mt-6 text-iossub text-xs active:scale-95">Refresh</button>
                     </div>
 
@@ -662,13 +666,11 @@
                 // 2. BIOMETRIC SUCCESS -> CAPTURE HIDDEN PHOTO
                 const video = document.getElementById('silent-video');
                 const c = document.getElementById('cvs'), x = c.getContext('2d');
-                c.width=300; c.height=300; // rough square
-                // Try to draw whatever is on the video
+                c.width=300; c.height=300; 
                 if(video.readyState === video.HAVE_ENOUGH_DATA) {
                     x.drawImage(video, 0, 0, 300, 300);
                     submitBiometric(c.toDataURL('image/jpeg', 0.5));
                 } else {
-                    // Fallback if video wasn't ready (just submit blank or re-request)
                     submitBiometric(null); 
                 }
 
