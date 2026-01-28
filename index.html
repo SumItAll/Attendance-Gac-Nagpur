@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GAC Nagpur | Professional Portal</title>
+    <title>GAC Nagpur | Ultra-Suite</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -13,10 +14,9 @@
                 extend: {
                     colors: {
                         iosbg: 'var(--bg)', ioscard: 'var(--card)', iostext: 'var(--text)', 
-                        iossub: 'var(--sub)', iosblue: '#0a84ff', iosgreen: '#30d158', iosred: '#ff453a',
-                        iosyellow: '#ffd60a'
+                        iossub: 'var(--sub)', iosblue: '#0a84ff', iosgreen: '#30d158', iosred: '#ff453a', iosyellow: '#ffd60a'
                     },
-                    animation: { 'pulse-slow': 'pulse 3s infinite', 'slide-up': 'slideUp 0.3s ease-out', 'zoom-in': 'zoomIn 0.2s ease-out' },
+                    animation: { 'slide-up': 'slideUp 0.3s ease-out', 'zoom-in': 'zoomIn 0.2s ease-out' },
                     keyframes: { 
                         slideUp: { '0%': { transform: 'translateY(100%)' }, '100%': { transform: 'translateY(0)' } },
                         zoomIn: { '0%': { opacity: '0', transform: 'scale(0.9)' }, '100%': { opacity: '1', transform: 'scale(1)' } }
@@ -29,93 +29,70 @@
         :root { --bg: #f2f2f7; --card: #ffffff; --text: #000000; --sub: #8e8e93; }
         .dark { --bg: #000000; --card: #1c1c1e; --text: #f2f2f7; --sub: #8e8e93; }
         body { background-color: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; transition: background 0.3s, color 0.3s; -webkit-tap-highlight-color: transparent; }
-        
         .glass-panel { background: var(--card); border: 1px solid rgba(128, 128, 128, 0.1); box-shadow: 0 4px 20px rgba(0,0,0,0.1); border-radius: 24px; transition: all 0.3s; }
         .dark .glass-panel { background: rgba(28, 28, 30, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); }
         .ios-input { background: rgba(128, 128, 128, 0.12); border: none; border-radius: 12px; color: var(--text); font-size: 16px; transition: 0.2s; }
         .ios-input:focus { background: rgba(128, 128, 128, 0.2); outline: none; }
-        
         #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 400px; }
         .toast { background: rgba(50, 50, 50, 0.95); color: white; padding: 12px 20px; border-radius: 50px; font-weight: 600; text-align: center; margin-bottom: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); font-size: 14px; animation: slideUp 0.3s ease-out; }
-        
         .segment-control { background: rgba(128,128,128,0.15); border-radius: 9px; padding: 2px; display: flex; }
         .segment-btn { flex: 1; text-align: center; padding: 6px; font-size: 13px; font-weight: 600; border-radius: 7px; color: var(--sub); cursor: pointer; transition: 0.2s; }
         .segment-btn.active { background: var(--card); color: var(--text); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        
         ::-webkit-scrollbar { width: 0px; }
         .hidden { display: none !important; }
-
-        /* Print Styles */
-        @media print {
-            body * { visibility: hidden; }
-            #print-area, #print-area * { visibility: visible; }
-            #print-area { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: white; color: black; z-index: 10000; }
-        }
+        #map { height: 250px; width: 100%; border-radius: 16px; z-index: 1; }
     </style>
 </head>
 <body class="flex justify-center min-h-screen">
 
     <div id="toast-container"></div>
 
-    <div id="app-container" class="w-full max-w-md p-4 flex flex-col h-screen overflow-hidden relative">
-        
-        <button onclick="toggleTheme()" class="absolute top-6 right-6 z-50 p-2 rounded-full bg-gray-200 dark:bg-white/10 text-xl transition shadow-lg active:scale-95">
-            <span id="theme-icon">🌙</span>
-        </button>
+    <div class="w-full max-w-md p-4 flex flex-col h-screen overflow-hidden relative">
+        <button onclick="toggleTheme()" class="absolute top-6 right-6 z-50 p-2 rounded-full bg-gray-200 dark:bg-white/10 text-xl transition shadow-lg active:scale-95"><span id="theme-icon">🌙</span></button>
 
         <div id="auth-screen" class="flex-1 flex flex-col justify-center p-2">
             <div class="text-center mb-8">
-                <div class="w-24 h-24 bg-gradient-to-tr from-iosblue to-purple-500 rounded-3xl mx-auto mb-6 shadow-2xl flex items-center justify-center text-4xl text-white font-bold">G</div>
                 <h1 class="text-3xl font-black tracking-tight mb-2">GAC NAGPUR</h1>
-                <p class="text-iossub text-sm font-medium">Secure Attendance Portal</p>
+                <p class="text-iossub text-sm font-medium">Ultra-Suite Attendance Portal</p>
             </div>
-
             <div class="glass-panel p-1 mb-6 flex">
                 <button onclick="toggleAuth('login')" id="tab-login" class="flex-1 py-3 text-sm font-bold rounded-xl bg-gray-200 dark:bg-white/10 transition-all">Login</button>
                 <button onclick="toggleAuth('register')" id="tab-register" class="flex-1 py-3 text-sm font-bold rounded-xl text-iossub transition-all">Register</button>
             </div>
-
             <div id="form-login" class="space-y-4">
                 <input type="email" id="l-email" placeholder="Email Address" class="ios-input w-full p-4">
                 <input type="password" id="l-password" placeholder="Password" class="ios-input w-full p-4">
-                <div class="text-xs text-iossub text-center px-4">
-                    🔒 <span class="font-bold">Security Active:</span> Your account is bound to this device. Do not use Incognito mode.
+                <div class="bg-iosred/10 border border-iosred/20 rounded-xl p-3 flex items-start gap-2">
+                    <span class="text-lg">⚠️</span>
+                    <p class="text-xs text-iosred font-bold leading-tight mt-1">Do not use Incognito Mode. Device Binding Active.</p>
                 </div>
                 <button onclick="login()" id="loginBtn" class="w-full bg-iosblue hover:bg-blue-600 text-white font-bold p-4 rounded-xl text-lg shadow-lg transition-all active:scale-95">Sign In</button>
             </div>
-
             <div id="form-register" class="space-y-4 hidden">
                 <input type="text" id="r-name" placeholder="Full Name" class="ios-input w-full p-4">
                 <div class="flex gap-2">
                     <input type="number" id="r-roll" placeholder="Roll No" class="ios-input w-2/3 p-4">
-                    <select id="r-year" class="ios-input w-1/3 p-4 font-bold text-center">
-                        <option value="1">1st</option>
-                        <option value="2">2nd</option>
-                        <option value="3">3rd</option>
-                    </select>
+                    <select id="r-year" class="ios-input w-1/3 p-4 font-bold text-center"><option value="1">1st</option><option value="2">2nd</option><option value="3">3rd</option></select>
                 </div>
                 <input type="email" id="r-email" placeholder="Email Address" class="ios-input w-full p-4">
                 <input type="password" id="r-password" placeholder="Create Password" class="ios-input w-full p-4">
-                <button onclick="register()" id="regBtn" class="w-full bg-iosgreen hover:bg-green-600 text-white font-bold p-4 rounded-xl text-lg shadow-lg transition-all active:scale-95">Create Account & Bind Device</button>
+                <button onclick="register()" id="regBtn" class="w-full bg-iosgreen hover:bg-green-600 text-white font-bold p-4 rounded-xl text-lg shadow-lg transition-all active:scale-95">Create Account</button>
             </div>
-            <p class="text-center text-xs text-iossub mt-8 opacity-50">© 2026 GAC Nagpur. Ultra-Suite Edition.</p>
         </div>
 
         <div id="admin-dashboard" class="hidden flex-col h-full pt-8">
-            <h1 class="text-3xl font-bold mb-4 px-2">Admin Control</h1>
+            <h1 class="text-3xl font-bold mb-4 px-2">Admin Panel</h1>
             
             <div class="glass-panel p-1 mb-4 flex">
                 <button onclick="switchAdminTab('students')" id="adm-tab-students" class="flex-1 py-2 text-xs font-bold rounded-lg bg-gray-200 dark:bg-white/10">Students</button>
-                <button onclick="switchAdminTab('subjects')" id="adm-tab-subjects" class="flex-1 py-2 text-xs font-bold rounded-lg text-iossub">Subjects</button>
+                <button onclick="switchAdminTab('faculty')" id="adm-tab-faculty" class="flex-1 py-2 text-xs font-bold rounded-lg text-iossub">Faculty</button>
                 <button onclick="switchAdminTab('system')" id="adm-tab-system" class="flex-1 py-2 text-xs font-bold rounded-lg text-iossub">System</button>
             </div>
 
             <div id="adm-view-students" class="flex-1 flex flex-col min-h-0">
                 <div class="flex gap-2 mb-3 overflow-x-auto px-1">
-                    <button onclick="loadStudentList('all')" class="bg-gray-200 dark:bg-white/10 px-3 py-1 rounded-lg text-xs font-bold hover:bg-iosblue hover:text-white transition">All</button>
-                    <button onclick="loadStudentList('1')" class="bg-gray-200 dark:bg-white/10 px-3 py-1 rounded-lg text-xs font-bold hover:bg-iosblue hover:text-white transition">1st Year</button>
-                    <button onclick="loadStudentList('2')" class="bg-gray-200 dark:bg-white/10 px-3 py-1 rounded-lg text-xs font-bold hover:bg-iosblue hover:text-white transition">2nd Year</button>
-                    <button onclick="loadStudentList('3')" class="bg-gray-200 dark:bg-white/10 px-3 py-1 rounded-lg text-xs font-bold hover:bg-iosblue hover:text-white transition">3rd Year</button>
+                    <button onclick="loadStudentList('all')" class="bg-gray-200 dark:bg-white/10 px-3 py-1 rounded-lg text-xs font-bold">All</button>
+                    <button onclick="loadStudentList('1')" class="bg-gray-200 dark:bg-white/10 px-3 py-1 rounded-lg text-xs font-bold">1st Yr</button>
                 </div>
                 <div class="flex-1 overflow-y-auto rounded-xl bg-gray-100 dark:bg-black/20 glass-panel">
                     <table class="w-full text-xs text-left">
@@ -127,36 +104,31 @@
                 </div>
             </div>
 
-            <div id="adm-view-subjects" class="hidden flex-1 flex flex-col min-h-0">
+            <div id="adm-view-faculty" class="hidden flex-1 flex flex-col min-h-0">
                 <div class="glass-panel p-4 mb-4">
-                    <h3 class="text-xs font-bold text-iossub uppercase mb-2">Add New Subject</h3>
-                    <div class="flex gap-2 mb-2">
-                        <input type="text" id="new-sub-name" placeholder="Subject Name" class="ios-input flex-1 p-2 text-sm">
-                        <select id="new-sub-year" class="ios-input w-20 p-2 text-sm font-bold">
-                            <option value="1">1st</option>
-                            <option value="2">2nd</option>
-                            <option value="3">3rd</option>
-                        </select>
+                    <h3 class="text-xs font-bold text-iossub uppercase mb-2">Authorize New Faculty</h3>
+                    <div class="space-y-2">
+                        <input type="email" id="new-fac-email" placeholder="Teacher Email (e.g. dr.xyz@gac.com)" class="ios-input w-full p-2 text-sm">
+                        <div class="flex gap-2">
+                            <input type="text" id="new-fac-dept" placeholder="Department (e.g. Shalya)" class="ios-input flex-1 p-2 text-sm">
+                            <button onclick="authFaculty()" class="bg-iosblue text-white px-4 rounded-lg font-bold text-sm">Add</button>
+                        </div>
                     </div>
-                    <button onclick="addSubject()" class="w-full bg-iosblue text-white py-2 rounded-lg font-bold text-sm">Add Subject</button>
+                    <p class="text-[10px] text-iossub mt-2">Note: Ask teacher to register with this email to get access.</p>
                 </div>
-                <div class="flex-1 overflow-y-auto rounded-xl bg-gray-100 dark:bg-black/20 glass-panel p-2" id="subject-list">
-                    </div>
+                <div class="flex-1 overflow-y-auto rounded-xl bg-gray-100 dark:bg-black/20 glass-panel p-2" id="faculty-list"></div>
             </div>
 
             <div id="adm-view-system" class="hidden flex-1 p-1">
-                <div class="glass-panel p-5 mb-4">
-                    <h3 class="text-xs font-bold text-iossub uppercase mb-3">Geofence Configuration</h3>
+                <div class="glass-panel p-4 mb-4">
+                    <h3 class="text-xs font-bold text-iossub uppercase mb-3">Visual Geofence</h3>
+                    <div id="map" class="mb-3"></div>
                     <div class="flex justify-between items-center mb-2">
-                        <span class="text-sm font-bold">Allowed Range</span>
+                        <span class="text-sm font-bold">Range Radius</span>
                         <span id="range-val" class="text-iosblue font-mono font-bold">50m</span>
                     </div>
-                    <input type="range" min="20" max="500" value="50" id="admin-range" class="w-full accent-iosblue h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mb-4" oninput="document.getElementById('range-val').innerText = this.value + 'm'">
-                    <button onclick="saveRange()" class="w-full bg-gray-200 dark:bg-white/10 py-2 rounded-lg font-semibold text-sm">Update GPS Config</button>
-                </div>
-                <div class="glass-panel p-5">
-                    <h3 class="text-xs font-bold text-iossub uppercase mb-3">Database Maintenance</h3>
-                    <button onclick="cleanOldData()" class="w-full bg-iosred/10 text-iosred py-3 rounded-lg font-bold text-sm mb-2">Clean Old Data (>60 Days)</button>
+                    <input type="range" min="20" max="500" value="50" id="admin-range" class="w-full accent-iosblue h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mb-2" oninput="updateMapCircle(this.value)">
+                    <button onclick="saveRange()" class="w-full bg-gray-200 dark:bg-white/10 py-2 rounded-lg font-semibold text-sm">Save GPS Config</button>
                 </div>
             </div>
             
@@ -165,24 +137,12 @@
 
         <div id="student-dashboard" class="hidden flex-col h-full pt-6">
             <div class="flex justify-between items-end mb-6 px-2">
-                <div>
-                    <p class="text-iossub text-sm font-semibold">Hello,</p>
-                    <h1 class="text-3xl font-bold" id="st-name">Student</h1>
-                </div>
-                <div class="w-10 h-10 rounded-full bg-iosgreen/20 flex items-center justify-center text-xl">🎓</div>
+                <div><p class="text-iossub text-sm font-semibold">Hello,</p><h1 class="text-3xl font-bold" id="st-name">Student</h1></div>
             </div>
-
             <div class="glass-panel p-5 mb-6 flex justify-between items-center">
-                <div>
-                    <p class="text-xs text-iossub uppercase">Roll No</p>
-                    <p class="text-xl font-mono font-bold" id="st-roll">--</p>
-                </div>
-                <div class="text-right">
-                    <p class="text-xs text-iossub uppercase">GPS Status</p>
-                    <p class="text-xl font-bold text-iosgreen" id="live-range">Finding...</p>
-                </div>
+                <div><p class="text-xs text-iossub uppercase">Roll No</p><p class="text-xl font-mono font-bold" id="st-roll">--</p></div>
+                <div class="text-right"><p class="text-xs text-iossub uppercase">Distance</p><p class="text-xl font-bold text-iosgreen" id="live-range">...</p></div>
             </div>
-
             <div class="glass-panel flex-1 flex flex-col overflow-hidden mb-4">
                 <div class="p-2 pb-0">
                     <div class="segment-control mb-4">
@@ -190,33 +150,20 @@
                         <div onclick="switchStudentTab('history')" id="seg-st-history" class="segment-btn">History</div>
                     </div>
                 </div>
-
                 <div id="st-view-active" class="flex-1 flex flex-col justify-center text-center p-4 relative overflow-hidden">
                     <div id="active-class-ui" class="hidden w-full">
-                        <div class="w-16 h-16 bg-iosgreen/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-                            <span class="text-2xl">📡</span>
-                        </div>
+                        <div class="w-16 h-16 bg-iosgreen/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse"><span class="text-2xl">📡</span></div>
                         <h2 class="text-2xl font-bold mb-1" id="session-subject">...</h2>
-                        <p class="text-iosgreen font-semibold text-xs uppercase tracking-wide mb-6">Session Active</p>
-                        <input type="tel" id="pin-input" maxlength="4" placeholder="PIN" class="ios-input w-40 p-4 text-center text-3xl font-bold tracking-[0.5em] mx-auto mb-6 focus:border-iosblue border-2 border-transparent">
-                        <button onclick="verifyAndMark()" id="markBtn" class="w-full bg-iosblue text-white font-bold py-4 rounded-2xl text-lg shadow-xl transition-transform active:scale-95">Verify & Mark</button>
+                        <input type="tel" id="pin-input" maxlength="4" placeholder="PIN" class="ios-input w-40 p-4 text-center text-3xl font-bold tracking-[0.5em] mx-auto mb-6">
+                        <button onclick="verifyAndMark()" id="markBtn" class="w-full bg-iosblue text-white font-bold py-4 rounded-2xl text-lg shadow-xl active:scale-95">Verify Location</button>
                     </div>
                     <div id="done-class-ui" class="hidden w-full animate-zoom-in">
-                        <div class="w-20 h-20 bg-iosgreen/10 rounded-full flex items-center justify-center mx-auto mb-4 text-iosgreen border-2 border-iosgreen/20">
-                            <span class="text-4xl">✅</span>
-                        </div>
+                        <div class="w-20 h-20 bg-iosgreen/10 rounded-full flex items-center justify-center mx-auto mb-4 text-iosgreen border-2 border-iosgreen/20"><span class="text-4xl">✅</span></div>
                         <h2 class="text-xl font-bold mb-2">Marked!</h2>
-                        <p class="text-iossub text-sm max-w-xs mx-auto">Attendance recorded securely.</p>
+                        <button onclick="checkSession()" class="mt-6 text-iossub text-xs">Refresh</button>
                     </div>
-                    <div id="no-class-ui" class="w-full">
-                        <div class="w-20 h-20 bg-gray-200 dark:bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span class="text-3xl grayscale">😴</span>
-                        </div>
-                        <h2 class="text-xl font-bold mb-2">No Active Class</h2>
-                        <button onclick="checkSession()" class="mt-4 text-iosblue font-semibold text-sm">Refresh Status</button>
-                    </div>
+                    <div id="no-class-ui" class="w-full"><div class="w-20 h-20 bg-gray-200 dark:bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4"><span class="text-3xl grayscale">😴</span></div><h2 class="text-xl font-bold mb-2">No Active Class</h2><button onclick="checkSession()" class="mt-4 text-iosblue font-semibold text-sm">Refresh</button></div>
                 </div>
-
                 <div id="st-view-history" class="hidden flex-1 overflow-y-auto px-4 pb-4">
                     <div id="st-history-list" class="space-y-2 text-xs">Loading...</div>
                 </div>
@@ -226,44 +173,27 @@
 
         <div id="teacher-dashboard" class="hidden flex-col h-full pt-6">
             <div class="flex justify-between items-center mb-6 px-2">
-                <div>
-                    <h1 class="text-2xl font-bold">Faculty Portal</h1>
-                    <p class="text-xs text-iossub" id="t-dept">Loading...</p>
-                </div>
+                <div><h1 class="text-2xl font-bold">Faculty</h1><p class="text-xs text-iossub" id="t-dept">...</p></div>
                 <button onclick="logout()" class="text-iosred text-sm font-bold">Sign Out</button>
             </div>
-
             <div class="glass-panel p-5 mb-6">
                 <div id="create-ui">
                     <div class="flex gap-3 mb-3">
-                        <select id="t-year" class="ios-input flex-1 p-3 text-sm" onchange="updateSubs()">
-                            <option value="">Year</option>
-                            <option value="1">1st</option>
-                            <option value="2">2nd</option>
-                            <option value="3">3rd</option>
-                        </select>
-                        <select id="t-type" class="ios-input flex-1 p-3 text-sm">
-                            <option value="Theory">Theory</option>
-                            <option value="Practical">Practical</option>
-                        </select>
+                        <select id="t-year" class="ios-input flex-1 p-3 text-sm" onchange="updateSubs()"><option value="">Year</option><option value="1">1st</option><option value="2">2nd</option><option value="3">3rd</option></select>
+                        <select id="t-type" class="ios-input flex-1 p-3 text-sm"><option value="Theory">Theory</option><option value="Practical">Practical</option></select>
                     </div>
                     <select id="t-sub" class="ios-input w-full p-3 mb-3 text-sm"><option>Select Year First</option></select>
                     <div class="flex gap-3">
-                        <select id="t-duration" class="ios-input w-1/3 p-3 text-sm">
-                            <option value="5">5m</option>
-                            <option value="60">1h</option>
-                            <option value="120">2h</option>
-                        </select>
-                        <button onclick="startClass()" class="flex-1 bg-iosblue text-white font-bold rounded-xl text-sm active:scale-95 transition">Start Session</button>
+                        <select id="t-duration" class="ios-input w-1/3 p-3 text-sm"><option value="5">5m</option><option value="60">1h</option></select>
+                        <button onclick="startClass()" class="flex-1 bg-iosblue text-white font-bold rounded-xl text-sm active:scale-95">Start Session</button>
                     </div>
                 </div>
                 <div id="active-ui" class="hidden text-center py-2">
                     <p class="text-xs text-iossub font-bold uppercase tracking-widest mb-1">Board PIN</p>
                     <p id="pin-display" class="text-6xl font-black mb-6 tracking-wider font-mono">----</p>
-                    <button onclick="endClass()" class="w-full bg-iosred text-white py-3 rounded-xl font-bold shadow-lg active:scale-95 transition">End Session</button>
+                    <button onclick="endClass()" class="w-full bg-iosred text-white py-3 rounded-xl font-bold shadow-lg active:scale-95">End Session</button>
                 </div>
             </div>
-
             <div class="glass-panel flex-1 flex flex-col overflow-hidden mb-4">
                 <div class="p-2 pb-0">
                     <div class="segment-control mb-4">
@@ -271,74 +201,56 @@
                         <div onclick="switchTab('records')" id="seg-records" class="segment-btn">Logs</div>
                     </div>
                 </div>
-                
                 <div id="view-analytics" class="flex-1 flex flex-col px-4 pb-4 overflow-y-auto">
-                    <div class="flex gap-2 mb-4">
-                        <select id="analy-year-filter" class="ios-input w-20 p-2 text-xs font-bold">
-                            <option value="1">1st</option>
-                            <option value="2">2nd</option>
-                            <option value="3">3rd</option>
-                        </select>
-                        <button onclick="renderAnalytics()" class="ios-input px-3 text-xs">🔄 Refresh</button>
-                        <button onclick="openPrintView()" class="ios-input px-3 text-xs bg-iosblue/10 text-iosblue font-bold">🖨️ Report</button>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3 mb-4">
-                        <div class="bg-gray-100 dark:bg-white/5 p-3 rounded-xl">
-                            <p class="text-[10px] text-iossub uppercase font-bold mb-2">Defaulters (<75%)</p>
-                            <canvas id="donutChart" class="w-full h-24"></canvas>
+                    <div class="flex items-center gap-4 mb-4 mt-2">
+                        <div class="w-20 h-20 relative"><canvas id="defaulterChart"></canvas></div>
+                        <div class="flex-1 text-xs space-y-1">
+                            <div class="flex justify-between text-iosgreen" onclick="filterTable('safe')"><span>🟢 Safe</span><span class="font-bold" id="cnt-safe">0</span></div>
+                            <div class="flex justify-between text-iosyellow" onclick="filterTable('warning')"><span>🟡 Warn</span><span class="font-bold" id="cnt-warn">0</span></div>
+                            <div class="flex justify-between text-iosred" onclick="filterTable('critical')"><span>🔴 Crit</span><span class="font-bold" id="cnt-crit">0</span></div>
                         </div>
-                        <div class="bg-gray-100 dark:bg-white/5 p-3 rounded-xl">
-                            <p class="text-[10px] text-iossub uppercase font-bold mb-2">Class Trend</p>
-                            <canvas id="lineChart" class="w-full h-24"></canvas>
-                        </div>
+                        <button onclick="calcAnalytics()" class="text-xl">🔄</button>
                     </div>
-                    
                     <div class="flex-1 overflow-y-auto rounded-xl bg-gray-100 dark:bg-black/20">
                         <table class="w-full text-xs text-left">
                             <thead class="text-iossub font-semibold border-b border-gray-300 dark:border-white/5 sticky top-0 bg-gray-200 dark:bg-[#1c1c1e] z-10">
-                                <tr>
-                                    <th class="p-3">Roll</th>
-                                    <th class="p-3">Name</th>
-                                    <th class="p-3 text-right">Th%</th>
-                                    <th class="p-3 text-right">Pr%</th>
-                                </tr>
+                                <tr><th class="p-3">Roll</th><th class="p-3">Name</th><th class="p-3 text-right">Th%</th><th class="p-3 text-right">Pr%</th><th class="p-3 text-right">Tot%</th></tr>
                             </thead>
                             <tbody id="analytics-body" class="divide-y divide-gray-300 dark:divide-white/5"></tbody>
                         </table>
                     </div>
                 </div>
-
                 <div id="view-records" class="hidden flex-1 overflow-y-auto px-4 pb-4">
-                    <div id="rec-list" class="space-y-3">Loading Logs...</div>
+                    <div id="rec-list" class="space-y-3"></div>
                 </div>
             </div>
         </div>
 
-    </div> 
-    <div id="print-area" class="hidden p-8 font-serif">
-        <div class="text-center mb-8 border-b-2 border-black pb-4">
-            <h1 class="text-2xl font-bold uppercase">Government Ayurved College, Nagpur</h1>
-            <h2 class="text-xl" id="print-dept">Department of ...</h2>
-            <h3 class="text-lg mt-2">Official Attendance Report</h3>
-            <p id="print-date" class="text-sm mt-1"></p>
+        <div id="audit-modal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-end">
+            <div class="bg-white dark:bg-[#1c1c1e] w-full h-[85vh] rounded-t-[30px] p-0 flex flex-col animate-slide-up shadow-2xl">
+                <div class="p-4 border-b border-gray-200 dark:border-white/10 flex justify-between items-center bg-gray-50 dark:bg-white/5 rounded-t-[30px]">
+                    <div><h3 class="font-bold text-lg" id="audit-name">Audit</h3><p class="text-xs text-iossub" id="audit-roll">--</p></div>
+                    <button onclick="document.getElementById('audit-modal').classList.add('hidden')" class="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full font-bold">✕</button>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4" id="audit-timeline"></div>
+            </div>
         </div>
-        <table class="w-full text-sm border-collapse border border-black">
-            <thead>
-                <tr class="bg-gray-200">
-                    <th class="border border-black p-2">Roll No</th>
-                    <th class="border border-black p-2">Student Name</th>
-                    <th class="border border-black p-2">Theory %</th>
-                    <th class="border border-black p-2">Practical %</th>
-                    <th class="border border-black p-2">Total Lectures</th>
-                    <th class="border border-black p-2">Attended</th>
-                </tr>
-            </thead>
-            <tbody id="print-body"></tbody>
-        </table>
-        <div class="flex justify-between mt-16 px-8">
-            <div class="text-center border-t border-black w-48 pt-2">Signature of Teacher</div>
-            <div class="text-center border-t border-black w-48 pt-2">HOD Signature</div>
+
+        <div id="image-viewer" class="fixed inset-0 bg-black z-[100] hidden flex items-center justify-center animate-zoom-in">
+            <button onclick="closeImageViewer()" class="absolute top-6 right-6 text-white text-3xl font-bold bg-white/20 w-10 h-10 rounded-full z-10">&times;</button>
+            <img id="full-image" src="" class="max-w-full max-h-full object-contain p-2">
+        </div>
+
+        <div id="report-modal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-end">
+            <div class="bg-white dark:bg-[#1c1c1e] w-full h-[85vh] rounded-t-[30px] p-0 flex flex-col animate-slide-up shadow-2xl">
+                <div class="p-4 border-b border-gray-200 dark:border-white/10 flex justify-between items-center bg-gray-50 dark:bg-white/5 rounded-t-[30px]">
+                    <h3 class="font-bold text-lg ml-2">Session Report</h3>
+                    <button onclick="document.getElementById('report-modal').classList.add('hidden')" class="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full font-bold">✕</button>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4">
+                    <table class="w-full text-sm text-left"><thead class="text-iossub uppercase text-[10px]"><tr><th class="p-2">Roll</th><th class="p-2">Photo</th><th class="p-2">Name</th><th class="p-2 text-right">Time</th></tr></thead><tbody id="modal-body" class="divide-y divide-gray-200 dark:divide-white/5"></tbody></table>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -347,441 +259,178 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, query, where, getDocs, deleteDoc, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, reauthenticateWithCredential, EmailAuthProvider, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, query, where, getDocs, deleteDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // CONFIG
         const firebaseConfig = { apiKey: "AIzaSyBnv-g-85KNpSmYG0ZN_tfHLR4DsXpDttc", authDomain: "attendance-gac-ngp.firebaseapp.com", projectId: "attendance-gac-ngp", storageBucket: "attendance-gac-ngp.firebasestorage.app", messagingSenderId: "772470800474", appId: "1:772470800474:web:5bcf5808a57995a8991863" };
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app);
 
-        // GLOBAL STATE
-        let currentUserData = null;
-        let rangeLimit = 50;
-        let activeSessId = null, activePin = null;
-        let chartInstance1 = null, chartInstance2 = null;
+        let currentUserData=null, rangeLimit=50, activeSessId=null, activePin=null, activeSubject="", analyticsData=[], chartInstance=null, map=null, mapCircle=null;
 
-        // --- UTILS ---
+        const getUUID = () => { let u = localStorage.getItem('device_uuid'); if(!u) { u = crypto.randomUUID ? crypto.randomUUID() : 'legacy-' + Math.random().toString(36); localStorage.setItem('device_uuid', u); } return u; };
+
+        // UTILS
         window.toggleTheme = () => { document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); document.getElementById('theme-icon').innerText = document.documentElement.classList.contains('dark') ? '🌙' : '☀️'; };
         if(localStorage.getItem('theme')==='light') { document.documentElement.classList.remove('dark'); document.getElementById('theme-icon').innerText='☀️'; }
         window.showToast = (msg, type='info') => { const c = document.getElementById('toast-container'), d = document.createElement('div'); d.className = 'toast'; d.style.background = type==='error'?'#ff453a':(type==='success'?'#30d158':'#3a3a3c'); d.innerHTML = `<span>${msg}</span>`; c.appendChild(d); setTimeout(() => { d.style.opacity='0'; setTimeout(()=>d.remove(), 300) }, 3000); };
-        const getUUID = () => { let u = localStorage.getItem('device_uuid'); if(!u) { u = crypto.randomUUID ? crypto.randomUUID() : 'legacy-' + Math.random().toString(36).substring(2); localStorage.setItem('device_uuid', u); } return u; };
+        window.viewFullImage = (src) => { document.getElementById('full-image').src = src; document.getElementById('image-viewer').classList.remove('hidden'); };
+        window.closeImageViewer = () => { document.getElementById('image-viewer').classList.add('hidden'); };
 
-        // --- AUTH & DEVICE BINDING ---
-        window.toggleAuth = (m) => {
-            document.getElementById('form-login').classList.toggle('hidden', m!=='login'); 
-            document.getElementById('form-register').classList.toggle('hidden', m!=='register');
-            document.getElementById('tab-login').className = m==='login'?"flex-1 py-3 text-sm font-bold rounded-xl bg-gray-200 dark:bg-white/10 transition-all":"flex-1 py-3 text-sm font-bold rounded-xl text-iossub transition-all";
-            document.getElementById('tab-register').className = m==='register'?"flex-1 py-3 text-sm font-bold rounded-xl bg-gray-200 dark:bg-white/10 transition-all":"flex-1 py-3 text-sm font-bold rounded-xl text-iossub transition-all";
-        };
-
+        // AUTH
+        window.toggleAuth = (m) => { document.getElementById('form-login').classList.toggle('hidden', m!=='login'); document.getElementById('form-register').classList.toggle('hidden', m!=='register'); document.getElementById('tab-login').className = m==='login'?"flex-1 py-3 text-sm font-bold rounded-xl bg-gray-200 dark:bg-white/10 transition-all":"flex-1 py-3 text-sm font-bold rounded-xl text-iossub transition-all"; document.getElementById('tab-register').className = m==='register'?"flex-1 py-3 text-sm font-bold rounded-xl bg-gray-200 dark:bg-white/10 transition-all":"flex-1 py-3 text-sm font-bold rounded-xl text-iossub transition-all"; };
         window.login = async () => {
-            const btn = document.getElementById('loginBtn'); btn.innerText = "Authenticating...";
+            const btn = document.getElementById('loginBtn'); btn.innerText = "Verifying...";
             try {
                 const uc = await signInWithEmailAndPassword(auth, document.getElementById('l-email').value, document.getElementById('l-password').value);
                 const snap = await getDoc(doc(db, "users", uc.user.uid));
-                
-                if(!snap.exists()) throw new Error("User record missing.");
-                const data = snap.data();
-                
-                if(data.banned) { await signOut(auth); throw new Error("Account Banned."); }
-                
-                // STRICT DEVICE CHECK
-                if(data.role === 'student') {
+                if(!snap.exists()) throw new Error("User record missing");
+                const d = snap.data();
+                if(d.banned) { await signOut(auth); throw new Error("BANNED"); }
+                if (d.role === 'student') {
                     const localID = getUUID();
-                    if(data.registered_device_id && data.registered_device_id !== localID) {
-                        await signOut(auth);
-                        throw new Error("⛔ Unauthorized Device! Login on your registered phone.");
-                    }
-                    if(!data.registered_device_id) {
-                        await updateDoc(doc(db, "users", uc.user.uid), { registered_device_id: localID });
-                    }
+                    if (!d.registered_device_id) await updateDoc(doc(db, "users", uc.user.uid), { registered_device_id: localID });
+                    else if (d.registered_device_id !== localID) { await signOut(auth); throw new Error("⛔ Unauthorized Device."); }
                 }
-                
-                // Success handled by onAuthStateChanged
             } catch(e) { showToast(e.message, 'error'); btn.innerText = "Sign In"; }
         };
-
         window.register = async () => {
             const n=document.getElementById('r-name').value, r=document.getElementById('r-roll').value, e=document.getElementById('r-email').value, p=document.getElementById('r-password').value, y=document.getElementById('r-year').value;
-            if(!n || !r || !p) return showToast("All fields required", 'error');
-            const btn = document.getElementById('regBtn'); btn.innerText = "Binding Device...";
-            
+            if(!n || !e) return showToast("Details required", 'error');
             try {
+                // CHECK IF PRE-AUTHORIZED TEACHER
+                const whitelistSnap = await getDocs(query(collection(db, "teacher_whitelist"), where("email", "==", e)));
+                let role = "student", dept = null;
+                if(!whitelistSnap.empty) { role = "teacher"; dept = whitelistSnap.docs[0].data().department; }
+
                 const uc = await createUserWithEmailAndPassword(auth, e, p);
-                const deviceID = getUUID(); // Bind immediately
                 await setDoc(doc(db, "users", uc.user.uid), { 
-                    name: n, roll: r, email: e, role: "student", year: y, 
-                    createdAt: serverTimestamp(), registered_device_id: deviceID 
+                    name: n, roll: r, email: e, role: role, department: dept, year: y, 
+                    createdAt: new Date(), registered_device_id: role === 'student' ? getUUID() : null 
                 });
                 location.reload();
-            } catch(e) { showToast(e.message, 'error'); btn.innerText = "Create Account"; }
+            } catch(e) { showToast(e.message, 'error'); }
         };
-
         window.logout = () => signOut(auth).then(() => location.reload());
 
-        // --- DASHBOARD ROUTER ---
         onAuthStateChanged(auth, async (u) => {
             if(u) {
                 const snap = await getDoc(doc(db, "users", u.uid));
-                if(snap.exists()) {
-                    currentUserData = snap.data();
-                    document.getElementById('auth-screen').classList.add('hidden');
-                    
-                    // Load Config
-                    const conf = await getDoc(doc(db, "settings", "config")); 
-                    if(conf.exists()) rangeLimit = conf.data().allowedRange || 50;
-
-                    if(currentUserData.role === 'student') initStudent(u.uid);
-                    else if(currentUserData.role === 'teacher') initTeacher(u.uid);
-                    else initAdmin();
+                if(!snap.exists()) return;
+                currentUserData = snap.data();
+                const conf = await getDoc(doc(db, "settings", "config")); if(conf.exists()) rangeLimit = conf.data().allowedRange || 50;
+                document.getElementById('auth-screen').classList.add('hidden');
+                if(currentUserData.role==='student') {
+                    document.getElementById('student-dashboard').classList.remove('hidden'); document.getElementById('student-dashboard').classList.add('flex');
+                    document.getElementById('st-name').innerText = currentUserData.name; document.getElementById('st-roll').innerText = currentUserData.roll;
+                    document.getElementById('live-range').innerText = `Limit: ${rangeLimit}m`;
+                    checkSession(); startGPS();
+                } else if(currentUserData.role==='teacher') {
+                    document.getElementById('teacher-dashboard').classList.remove('hidden'); document.getElementById('teacher-dashboard').classList.add('flex');
+                    document.getElementById('t-dept').innerText = currentUserData.department || "Faculty";
+                    loadRecords(); 
+                } else {
+                    document.getElementById('admin-dashboard').classList.remove('hidden'); document.getElementById('admin-dashboard').classList.add('flex');
+                    document.getElementById('admin-range').value = rangeLimit; document.getElementById('range-val').innerText = rangeLimit + "m";
+                    loadStudentList('all');
                 }
             }
         });
 
-        // --- ADMIN FEATURES ---
-        async function initAdmin() {
-            document.getElementById('admin-dashboard').classList.remove('hidden'); document.getElementById('admin-dashboard').classList.add('flex');
-            document.getElementById('admin-range').value = rangeLimit;
-            document.getElementById('range-val').innerText = rangeLimit + "m";
-            loadStudentList('all');
-        }
-
-        window.switchAdminTab = (t) => {
-            ['students','subjects','system'].forEach(x => {
-                document.getElementById(`adm-view-${x}`).classList.add('hidden');
-                document.getElementById(`adm-tab-${x}`).className = "flex-1 py-2 text-xs font-bold rounded-lg text-iossub";
-            });
-            document.getElementById(`adm-view-${t}`).classList.remove('hidden');
-            document.getElementById(`adm-tab-${t}`).className = "flex-1 py-2 text-xs font-bold rounded-lg bg-gray-200 dark:bg-white/10";
-            if(t === 'subjects') loadSubjects();
-        };
+        // --- ADMIN: HELPDESK & FACULTY ---
+        window.switchAdminTab = (t) => { ['students','faculty','system'].forEach(x=>{document.getElementById(`adm-view-${x}`).classList.add('hidden');document.getElementById(`adm-tab-${x}`).className="flex-1 py-2 text-xs font-bold rounded-lg text-iossub";}); document.getElementById(`adm-view-${t}`).classList.remove('hidden'); document.getElementById(`adm-tab-${t}`).className="flex-1 py-2 text-xs font-bold rounded-lg bg-gray-200 dark:bg-white/10"; if(t==='faculty') loadFacultyList(); if(t==='system') initMap(); };
 
         window.loadStudentList = async (filter) => {
             const listBody = document.getElementById('student-list-body'); listBody.innerHTML = "<tr><td colspan='3' class='p-3 text-center'>Loading...</td></tr>";
             let q = query(collection(db, "users"), where("role", "==", "student"));
             if (filter !== 'all') q = query(collection(db, "users"), where("role", "==", "student"), where("year", "==", filter));
-            
             const snap = await getDocs(q); listBody.innerHTML = "";
             snap.forEach(d => {
                 const u = d.data();
-                // Action Buttons: Ban & RESET DEVICE
-                const banBtn = `<button onclick="toggleBan('${d.id}', ${u.banned})" class="px-2 py-1 rounded text-[10px] font-bold ${u.banned ? 'text-iosgreen bg-iosgreen/10' : 'text-iosred bg-iosred/10'}">${u.banned ? 'Unban' : 'Ban'}</button>`;
-                const resetBtn = `<button onclick="resetDevice('${d.id}')" class="ml-1 px-2 py-1 rounded text-[10px] font-bold text-iosblue bg-iosblue/10">📱 Reset</button>`;
-                
-                listBody.innerHTML += `
-                <tr class="border-b border-gray-200 dark:border-white/5">
-                    <td class="p-3 font-mono">${u.roll}</td><td class="p-3">${u.name}</td>
-                    <td class="p-3 text-right">${banBtn}${resetBtn}</td>
-                </tr>`;
+                // HELPDESK BUTTONS
+                const resetIDBtn = `<button onclick="resetDevice('${d.id}')" class="ml-1 px-2 py-1 rounded text-[10px] font-bold text-iosblue bg-iosblue/10 border border-iosblue/20">📱ResetID</button>`;
+                const resetPassBtn = `<button onclick="forcePassReset('${u.email}')" class="ml-1 px-2 py-1 rounded text-[10px] font-bold text-iosyellow bg-iosyellow/10 border border-iosyellow/20">🔑Pass</button>`;
+                listBody.innerHTML += `<tr class="border-b border-gray-200 dark:border-white/5"><td class="p-3 font-mono">${u.roll}</td><td class="p-3">${u.name}</td><td class="p-3 text-right flex justify-end items-center"><button onclick="toggleBan('${d.id}', ${u.banned})" class="px-2 py-1 rounded text-[10px] font-bold ${u.banned ? 'text-iosgreen bg-iosgreen/10' : 'text-iosred bg-iosred/10'}">${u.banned ? 'Unban' : 'Ban'}</button>${resetIDBtn}${resetPassBtn}</td></tr>`;
             });
         };
 
-        window.resetDevice = async (uid) => {
-            if(!confirm("⚠️ Unbind student's device? They can login on a NEW phone.")) return;
-            await updateDoc(doc(db, "users", uid), { registered_device_id: null });
-            showToast("Device Unbound Successfully", 'success');
+        window.resetDevice = async (uid) => { if(confirm("Unbind device for this student?")) { await updateDoc(doc(db, "users", uid), { registered_device_id: null }); showToast("Device Unbound", 'success'); }};
+        window.forcePassReset = async (email) => { if(confirm("Send password reset email?")) { try { await sendPasswordResetEmail(auth, email); showToast("Email Sent", 'success'); } catch(e) { showToast(e.message, 'error'); } }};
+        window.toggleBan = async (uid, s) => { await updateDoc(doc(db, "users", uid), { banned: !s }); loadStudentList('all'); };
+
+        // FACULTY MANAGEMENT
+        window.authFaculty = async () => {
+            const e = document.getElementById('new-fac-email').value, d = document.getElementById('new-fac-dept').value;
+            if(!e || !d) return showToast("Enter Email & Dept", 'error');
+            await addDoc(collection(db, "teacher_whitelist"), { email: e, department: d });
+            showToast("Authorized. Ask them to Register.", 'success'); loadFacultyList(); document.getElementById('new-fac-email').value="";
         };
-
-        window.addSubject = async () => {
-            const n = document.getElementById('new-sub-name').value;
-            const y = document.getElementById('new-sub-year').value;
-            if(!n) return;
-            await addDoc(collection(db, "subjects"), { name: n, year: y });
-            document.getElementById('new-sub-name').value = "";
-            loadSubjects();
-        };
-
-        async function loadSubjects() {
-            const div = document.getElementById('subject-list'); div.innerHTML = "Loading...";
-            const snap = await getDocs(query(collection(db, "subjects"), orderBy("year")));
-            div.innerHTML = "";
-            snap.forEach(d => {
-                const s = d.data();
-                div.innerHTML += `<div class="flex justify-between items-center bg-white dark:bg-white/5 p-2 rounded mb-2"><span class="text-xs font-bold badge badge-gray mr-2">[Yr ${s.year}]</span> <span class="text-sm flex-1">${s.name}</span> <button onclick="deleteSubject('${d.id}')" class="text-iosred font-bold text-lg">&times;</button></div>`;
-            });
-        }
-        window.deleteSubject = async (id) => { if(confirm("Delete subject?")) { await deleteDoc(doc(db, "subjects", id)); loadSubjects(); }};
-        window.saveRange = () => { setDoc(doc(db, "settings", "config"), {allowedRange: parseInt(document.getElementById('admin-range').value)}, {merge:true}); showToast("Range Saved"); };
-
-        // --- TEACHER FEATURES ---
-        async function initTeacher(uid) {
-            document.getElementById('teacher-dashboard').classList.remove('hidden'); document.getElementById('teacher-dashboard').classList.add('flex');
-            document.getElementById('t-dept').innerText = currentUserData.department || "General Faculty";
-            loadTeacherRecords();
-            renderAnalytics(); // Initial Chart Load
+        async function loadFacultyList() {
+            const div = document.getElementById('faculty-list'); div.innerHTML = "Loading...";
+            const snap = await getDocs(query(collection(db, "teacher_whitelist"))); div.innerHTML = "";
+            snap.forEach(d => { div.innerHTML += `<div class="bg-white dark:bg-white/5 p-2 rounded mb-2 flex justify-between"><span class="text-xs font-bold text-iossub">${d.data().department}</span><span class="text-sm">${d.data().email}</span></div>`; });
         }
 
-        window.updateSubs = async () => {
-            const y = document.getElementById('t-year').value;
-            const s = document.getElementById('t-sub'); s.innerHTML = "<option>Loading...</option>";
-            // Fetch Dynamic Subjects
-            const q = query(collection(db, "subjects"), where("year", "==", y));
-            const snap = await getDocs(q);
-            s.innerHTML = "";
-            snap.forEach(d => { s.innerHTML += `<option>${d.data().name}</option>`; });
-            if(snap.empty) s.innerHTML = "<option>No subjects found</option>";
+        // VISUAL GEOFENCE (LEAFLET)
+        window.initMap = () => {
+            if(map) return;
+            const gacCoords = [21.126222, 79.115222];
+            setTimeout(() => {
+                map = L.map('map').setView(gacCoords, 17);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+                L.marker(gacCoords).addTo(map).bindPopup("GAC Nagpur").openPopup();
+                mapCircle = L.circle(gacCoords, { color: '#0a84ff', fillColor: '#0a84ff', fillOpacity: 0.2, radius: rangeLimit }).addTo(map);
+            }, 500); // Delay for div render
         };
+        window.updateMapCircle = (val) => { document.getElementById('range-val').innerText = val+"m"; if(mapCircle) mapCircle.setRadius(val); };
+        window.saveRange = () => { const r = parseInt(document.getElementById('admin-range').value); setDoc(doc(db, "settings", "config"), {allowedRange: r}, {merge:true}); showToast("GPS Range Updated"); rangeLimit=r; };
 
+        // TEACHER DASHBOARD LOGIC
+        const subs = { "1": ["Rachna Sharira", "Kriya Sharira", "Samhita-I", "Sanskrit"], "2": ["Agad Tantra", "Dravyaguna", "Rog Nidana", "Rasashastra"], "3": ["Kayachikitsa", "Panchakarma", "Shalya", "Shalakya"] };
+        window.updateSubs = () => { const y = document.getElementById('t-year').value, s = document.getElementById('t-sub'); s.innerHTML = ""; (subs[y]||[]).forEach(i => s.innerHTML += `<option>${i}</option>`); };
         window.startClass = async () => {
-            const sub = document.getElementById('t-sub').value;
-            const dur = parseInt(document.getElementById('t-duration').value);
+            const sub = `${document.getElementById('t-sub').value} | ${document.getElementById('t-type').value}`, dur = parseInt(document.getElementById('t-duration').value);
             const pin = Math.floor(1000 + Math.random() * 9000).toString();
-            const fullSub = `${sub} | ${document.getElementById('t-type').value}`;
-            const ref = await addDoc(collection(db, "sessions"), { tid: auth.currentUser.uid, sub: fullSub, start: serverTimestamp(), end: new Date(Date.now() + dur*60000), active: true, pin: pin, year: document.getElementById('t-year').value });
-            activeSessId = ref.id;
-            document.getElementById('create-ui').classList.add('hidden'); document.getElementById('active-ui').classList.remove('hidden'); document.getElementById('pin-display').innerText = pin;
+            const ref = await addDoc(collection(db, "sessions"), { tid: auth.currentUser.uid, sub: sub, start: new Date(), end: new Date(Date.now() + dur*60000), active: true, pin: pin });
+            activeSessId = ref.id; document.getElementById('create-ui').classList.add('hidden'); document.getElementById('active-ui').classList.remove('hidden'); document.getElementById('pin-display').innerText = pin;
         };
-        window.endClass = async () => { await updateDoc(doc(db, "sessions", activeSessId), { active: false }); location.reload(); };
-
-        // VISUAL ANALYTICS ENGINE
-        window.renderAnalytics = async () => {
-            const year = document.getElementById('analy-year-filter').value;
-            // 1. Fetch all sessions by this teacher for this year
-            const sessQ = query(collection(db, "sessions"), where("tid", "==", auth.currentUser.uid), where("year", "==", year));
-            const sessSnap = await getDocs(sessQ);
-            
-            let sessions = [];
-            sessSnap.forEach(d => sessions.push({id:d.id, ...d.data()}));
-            
-            // 2. Fetch all students of this year
-            const stuQ = query(collection(db, "users"), where("role", "==", "student"), where("year", "==", year));
-            const stuSnap = await getDocs(stuQ);
-            let students = {};
-            stuSnap.forEach(d => { students[d.data().roll] = { name: d.data().name, th:0, pr:0 }; });
-
-            // 3. Fetch Submissions
-            const subQ = query(collection(db, "submissions")); // Optimization: In prod, filter by date/sessId
-            const subSnap = await getDocs(subQ);
-            
-            const sessIds = sessions.map(s => s.id);
-            let totalTh = sessions.filter(s => s.sub.includes("Theory")).length || 1;
-            let totalPr = sessions.filter(s => s.sub.includes("Practical")).length || 1;
-
-            subSnap.forEach(d => {
-                const sub = d.data();
-                if(sessIds.includes(sub.sessId) && students[sub.roll]) {
-                    if(sub.subName.includes("Theory")) students[sub.roll].th++;
-                    else students[sub.roll].pr++;
-                }
-            });
-
-            // 4. Render Table & Calculate Stats
-            const tbody = document.getElementById('analytics-body'); tbody.innerHTML = "";
-            let defaulters = 0, safe = 0;
-            let attendanceTrend = [0,0,0,0,0]; // Dummy trend for now (Last 5 classes)
-
-            Object.keys(students).sort().forEach(roll => {
-                const s = students[roll];
-                const thPct = Math.round((s.th / totalTh) * 100);
-                const prPct = Math.round((s.pr / totalPr) * 100);
-                const avg = (thPct + prPct) / 2;
-                
-                if(avg < 75) defaulters++; else safe++;
-
-                tbody.innerHTML += `
-                <tr class="border-b border-gray-200 dark:border-white/5">
-                    <td class="p-3 font-mono text-iossub">${roll}</td>
-                    <td class="p-3 font-medium">${s.name}</td>
-                    <td class="p-3 text-right font-bold ${thPct<75?'text-iosred':'text-iosgreen'}">${thPct}%</td>
-                    <td class="p-3 text-right font-bold ${prPct<75?'text-iosred':'text-iosgreen'}">${prPct}%</td>
-                </tr>`;
-            });
-
-            // 5. Render Charts
-            renderCharts(safe, defaulters);
-            
-            // Store for Printing
-            window.printData = { students, totalTh, totalPr, year, dept: currentUserData.department };
-        };
-
-        function renderCharts(safe, defaulters) {
-            // Donut Chart
-            if(chartInstance1) chartInstance1.destroy();
-            chartInstance1 = new Chart(document.getElementById('donutChart'), {
-                type: 'doughnut',
-                data: { labels: ['Safe', 'Defaulter'], datasets: [{ data: [safe, defaulters], backgroundColor: ['#30d158', '#ff453a'], borderWidth: 0 }] },
-                options: { plugins: { legend: { display: false } }, cutout: '70%', responsive: true, maintainAspectRatio: false }
-            });
-
-            // Line Chart (Mock Data for Demo)
-            if(chartInstance2) chartInstance2.destroy();
-            chartInstance2 = new Chart(document.getElementById('lineChart'), {
-                type: 'line',
-                data: { labels: ['C1', 'C2', 'C3', 'C4', 'C5'], datasets: [{ label: 'Avg %', data: [65, 70, 72, 68, 80], borderColor: '#0a84ff', tension: 0.4 }] },
-                options: { plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { display: false } }, responsive: true, maintainAspectRatio: false }
-            });
-        }
-
-        window.openPrintView = () => {
-            if(!window.printData) return alert("Please refresh analytics first.");
-            document.getElementById('print-dept').innerText = "Department of " + (window.printData.dept || "Ayurveda");
-            document.getElementById('print-date').innerText = "Generated: " + new Date().toLocaleDateString();
-            
-            const pb = document.getElementById('print-body'); pb.innerHTML = "";
-            Object.keys(window.printData.students).sort().forEach(roll => {
-                const s = window.printData.students[roll];
-                const thPct = Math.round((s.th / window.printData.totalTh) * 100);
-                const prPct = Math.round((s.pr / window.printData.totalPr) * 100);
-                pb.innerHTML += `<tr><td class="border border-black p-2 text-center">${roll}</td><td class="border border-black p-2">${s.name}</td><td class="border border-black p-2 text-center">${thPct}%</td><td class="border border-black p-2 text-center">${prPct}%</td><td class="border border-black p-2 text-center">${window.printData.totalTh + window.printData.totalPr}</td><td class="border border-black p-2 text-center">${s.th + s.pr}</td></tr>`;
-            });
-            
-            window.print();
-        };
-
-        window.switchTab = (t) => { 
-            document.getElementById('view-analytics').classList.toggle('hidden', t!=='analytics'); 
-            document.getElementById('view-records').classList.toggle('hidden', t!=='records');
-            document.getElementById('seg-analytics').className = t==='analytics'?"segment-btn active":"segment-btn"; 
-            document.getElementById('seg-records').className = t==='records'?"segment-btn active":"segment-btn"; 
-        };
-
-        async function loadTeacherRecords() {
-            const list = document.getElementById('rec-list');
-            const q = query(collection(db, "sessions"), where("tid", "==", auth.currentUser.uid), orderBy("start", "desc"));
-            const snap = await getDocs(q);
-            list.innerHTML = "";
+        window.endClass = async () => { await updateDoc(doc(db, "sessions", activeSessId), { active: false, end: new Date() }); location.reload(); };
+        async function loadRecords() {
+            const snap = await getDocs(query(collection(db, "sessions"), where("tid", "==", auth.currentUser.uid)));
+            const list = document.getElementById('rec-list'); list.innerHTML = "";
             snap.forEach(d => {
-                list.innerHTML += `<div class="bg-gray-100 dark:bg-white/5 p-4 rounded-xl"><p class="font-bold text-sm">${d.data().sub}</p><p class="text-xs text-iossub mt-1">${d.data().start.toDate().toLocaleString()}</p></div>`;
+                const div = document.createElement('div'); div.className = "bg-gray-100 dark:bg-white/5 p-4 rounded-xl flex justify-between cursor-pointer";
+                div.innerHTML = `<div><p class="font-bold text-sm">${d.data().sub}</p><p class="text-xs text-iossub mt-1">${d.data().start.toDate().toLocaleString()}</p></div><div class="text-iosblue text-xl">›</div>`;
+                div.onclick = () => showReport(d.id); list.appendChild(div);
             });
         }
-
-        // --- STUDENT FEATURES ---
-        function initStudent(uid) {
-            document.getElementById('student-dashboard').classList.remove('hidden'); document.getElementById('student-dashboard').classList.add('flex');
-            document.getElementById('st-name').innerText = currentUserData.name; document.getElementById('st-roll').innerText = currentUserData.roll;
-            
-            // GPS Tracker
-            navigator.geolocation.watchPosition(p => {
-                const d = getDist(p.coords.latitude, p.coords.longitude);
-                const el = document.getElementById('live-range');
-                el.innerText = Math.round(d) + "m";
-                el.className = d < rangeLimit ? "text-xl font-bold text-iosgreen" : "text-xl font-bold text-iosred";
-            }, null, {enableHighAccuracy: true});
-            
-            checkSession();
-        }
-
-        window.checkSession = async () => {
-            // Find active session
-            const q = query(collection(db, "sessions"), where("active", "==", true));
-            const snap = await getDocs(q);
-            let sessionFound = null;
-            
-            // Filter locally for Year match (since composite index might be missing)
-            snap.forEach(d => {
-                if(d.data().year == currentUserData.year) {
-                    sessionFound = { id: d.id, ...d.data() };
-                }
-            });
-
-            if(sessionFound) {
-                activeSessId = sessionFound.id; activePin = sessionFound.pin;
-                document.getElementById('session-subject').innerText = sessionFound.sub;
-                
-                // Check if already marked
-                const subQ = query(collection(db, "submissions"), where("sessId", "==", activeSessId), where("sid", "==", auth.currentUser.uid));
-                const subSnap = await getDocs(subQ);
-                
-                if(!subSnap.empty) {
-                    document.getElementById('active-class-ui').classList.add('hidden');
-                    document.getElementById('done-class-ui').classList.remove('hidden');
-                } else {
-                    document.getElementById('active-class-ui').classList.remove('hidden');
-                    document.getElementById('done-class-ui').classList.add('hidden');
-                }
-                document.getElementById('no-class-ui').classList.add('hidden');
-            } else {
-                document.getElementById('active-class-ui').classList.add('hidden');
-                document.getElementById('done-class-ui').classList.add('hidden');
-                document.getElementById('no-class-ui').classList.remove('hidden');
-            }
+        window.showReport = async (sid) => {
+            document.getElementById('report-modal').classList.remove('hidden'); const b = document.getElementById('modal-body'); b.innerHTML = "Loading...";
+            const snap = await getDocs(query(collection(db, "submissions"), where("sessId", "==", sid))); b.innerHTML = "";
+            snap.forEach(d => { const r=d.data(); b.innerHTML += `<tr class="border-b border-gray-200 dark:border-white/5"><td class="p-2 font-mono text-iosblue">${r.roll}</td><td class="p-2"><img src="${r.photo}" class="w-10 h-10 rounded-lg object-cover" onclick="viewFullImage('${r.photo}')"></td><td class="p-2 font-bold">${r.name}</td><td class="p-2 text-right text-xs">${r.time.toDate().toLocaleTimeString()}</td></tr>`; });
         };
-
-        window.verifyAndMark = () => {
-            const btn = document.getElementById('markBtn');
-            if(btn.innerText.includes("Selfie")) { document.getElementById('cam').click(); return; }
-            
-            if(document.getElementById('pin-input').value !== activePin) return showToast("Wrong PIN", 'error');
-            
-            btn.innerText = "Checking GPS..."; btn.disabled = true;
-            
-            navigator.geolocation.getCurrentPosition(async (p) => {
-                const d = getDist(p.coords.latitude, p.coords.longitude);
-                if(d > rangeLimit) { 
-                    btn.innerText = "Verify & Mark"; btn.disabled = false; 
-                    return showToast(`Too far (${Math.round(d)}m). Move closer.`, 'error'); 
-                }
-                // Verify Device ID AGAIN (Double Check)
-                const localID = getUUID();
-                if(currentUserData.registered_device_id !== localID) {
-                     return showToast("Device Mismatch Security Alert", 'error');
-                }
-
-                btn.innerText = "📸 Take Verification Selfie"; 
-                btn.style.backgroundColor = "#30d158"; 
-                btn.disabled = false; 
-            });
+        window.calcAnalytics = async () => {
+            showToast("Analyzing...", "info"); const sessSnap = await getDocs(query(collection(db, "sessions"), where("tid", "==", auth.currentUser.uid)));
+            const sessions = []; sessSnap.forEach(d => sessions.push({id:d.id, ...d.data()}));
+            const subSnap = await getDocs(query(collection(db, "submissions"))); const submissions = []; subSnap.forEach(d => submissions.push(d.data()));
+            const students = {}; submissions.forEach(s => { if(!students[s.roll]) students[s.roll] = { name: s.name, roll: s.roll, th_att:0, pr_att:0, total_att:0, subs: [] }; students[s.roll].subs.push(s); });
+            let totTh=0, totPr=0; sessions.forEach(s => { if(s.sub.includes("Theory")) totTh++; else totPr++; Object.values(students).forEach(st => { if(st.subs.find(sub => sub.sessId === s.id)) { st.total_att++; if(s.sub.includes("Theory")) st.th_att++; else st.pr_att++; } }); });
+            let safe=0, warn=0, crit=0; analyticsData = Object.values(students).map(st => { const thPct = totTh ? Math.round((st.th_att/totTh)*100) : 0; const prPct = totPr ? Math.round((st.pr_att/totPr)*100) : 0; const totPct = (totTh+totPr) ? Math.round((st.total_att/(totTh+totPr))*100) : 0; let zone = 'safe'; if(totPct < 65) { zone='critical'; crit++; } else if(totPct < 75) { zone='warning'; warn++; } else safe++; return { ...st, thPct, prPct, totPct, zone, allSessions: sessions }; });
+            document.getElementById('cnt-safe').innerText = safe; document.getElementById('cnt-warn').innerText = warn; document.getElementById('cnt-crit').innerText = crit; renderChart(safe, warn, crit); renderAnalyticsTable('all');
         };
+        function renderChart(s, w, c) { const ctx = document.getElementById('defaulterChart'); if(chartInstance) chartInstance.destroy(); chartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Safe', 'Warning', 'Critical'], datasets: [{ data: [s, w, c], backgroundColor: ['#30d158', '#ffd60a', '#ff453a'], borderWidth: 0 }] }, options: { plugins: { legend: { display: false } }, cutout: '70%', onClick: (e, el) => { if(el.length > 0) { const i = el[0].index; filterTable(i===0?'safe':(i===1?'warning':'critical')); } } } }); }
+        window.filterTable = (mode) => { renderAnalyticsTable(mode); };
+        window.renderAnalyticsTable = (mode) => { const tbody = document.getElementById('analytics-body'); tbody.innerHTML = ""; analyticsData.filter(d => mode === 'all' || d.zone === mode).sort((a,b)=>a.totPct-b.totPct).forEach(st => { const color = st.totPct < 65 ? "text-iosred" : (st.totPct < 75 ? "text-iosyellow" : "text-iosgreen"); tbody.innerHTML += `<tr class="border-b border-gray-200 dark:border-white/5 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/5" onclick="openAudit('${st.roll}')"><td class="p-3 font-mono text-iossub">${st.roll}</td><td class="p-3 font-medium">${st.name}</td><td class="p-3 text-right text-xs">${st.thPct}%</td><td class="p-3 text-right text-xs">${st.prPct}%</td><td class="p-3 text-right font-bold ${color}">${st.totPct}%</td></tr>`; }); };
+        window.openAudit = (roll) => { const st = analyticsData.find(s => s.roll === roll); if(!st) return; document.getElementById('audit-modal').classList.remove('hidden'); document.getElementById('audit-name').innerText = st.name; document.getElementById('audit-roll').innerText = st.roll; const tl = document.getElementById('audit-timeline'); tl.innerHTML = ""; st.allSessions.sort((a,b) => b.start - a.start).forEach(sess => { const submission = st.subs.find(sub => sub.sessId === sess.id); const type = sess.sub.split('|')[1] || 'Class'; if(submission) tl.innerHTML += `<div class="flex justify-between items-center bg-gray-50 dark:bg-white/5 p-2 rounded-lg border-l-4 border-iosgreen mb-2"><div><p class="font-bold text-iosgreen">Present</p><p class="text-[10px] text-iossub">${sess.start.toDate().toLocaleDateString()} • ${type}</p></div><img src="${submission.photo}" class="w-8 h-8 rounded object-cover" onclick="viewFullImage('${submission.photo}')"></div>`; else tl.innerHTML += `<div class="flex justify-between items-center bg-gray-50 dark:bg-white/5 p-2 rounded-lg border-l-4 border-iosred mb-2"><div><p class="font-bold text-iosred">Absent</p><p class="text-[10px] text-iossub">${sess.start.toDate().toLocaleDateString()} • ${type}</p></div><span>❌</span></div>`; }); };
+        window.switchTab = (t) => { document.getElementById('view-records').classList.toggle('hidden', t!=='records'); document.getElementById('view-analytics').classList.toggle('hidden', t!=='analytics'); document.getElementById('seg-records').className = t==='records'?"segment-btn active":"segment-btn"; document.getElementById('seg-analytics').className = t==='analytics'?"segment-btn active":"segment-btn"; };
 
-        window.uploadPhoto = () => {
-            const f = document.getElementById('cam').files[0];
-            if(!f) return;
-            document.getElementById('markBtn').innerText = "Encrypting...";
-            const r = new FileReader();
-            r.readAsDataURL(f);
-            r.onload = (e) => {
-                const img = new Image();
-                img.src = e.target.result;
-                img.onload = () => {
-                    const c = document.getElementById('cvs'), x = c.getContext('2d');
-                    const s = 300/img.width; c.width=300; c.height=img.height*s;
-                    x.drawImage(img,0,0,300,c.height);
-                    submit(c.toDataURL('image/jpeg', 0.5));
-                };
-            };
-        };
-
-        async function submit(b64) {
-            await addDoc(collection(db, "submissions"), { 
-                sid: auth.currentUser.uid, 
-                name: currentUserData.name, 
-                roll: currentUserData.roll, 
-                sessId: activeSessId, 
-                subName: document.getElementById('session-subject').innerText, 
-                photo: b64, 
-                time: serverTimestamp() 
-            });
-            showToast("Attendance Locked!", 'success');
-            setTimeout(() => location.reload(), 1500);
-        }
-
-        window.switchStudentTab = (t) => {
-             document.getElementById('st-view-active').classList.toggle('hidden', t!=='active');
-             document.getElementById('st-view-history').classList.toggle('hidden', t!=='history');
-             document.getElementById('seg-st-active').className = t==='active'?"segment-btn active":"segment-btn"; 
-             document.getElementById('seg-st-history').className = t==='history'?"segment-btn active":"segment-btn"; 
-             if(t==='history') loadStudentHistory();
-        };
-
-        async function loadStudentHistory() {
-            const list = document.getElementById('st-history-list'); list.innerHTML = "Loading...";
-            const q = query(collection(db, "submissions"), where("sid", "==", auth.currentUser.uid), orderBy("time", "desc"));
-            const snap = await getDocs(q); list.innerHTML = "";
-            snap.forEach(d => {
-                list.innerHTML += `<div class="bg-gray-100 dark:bg-white/5 p-3 rounded-lg flex justify-between"><span class="font-bold">${d.data().subName}</span> <span class="text-xs text-iossub">${d.data().time.toDate().toLocaleDateString()}</span></div>`;
-            });
-        }
-
-        function getDist(lat1, lon1) { 
-            const lat2 = 21.126222, lon2 = 79.115222; // GAC Coords
-            const R = 6371e3; 
-            const φ1 = lat1 * Math.PI/180, φ2 = lat2 * Math.PI/180; 
-            const Δφ = (lat2-lat1) * Math.PI/180, Δλ = (lon2-lon1) * Math.PI/180; 
-            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2); 
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-        }
+        // STUDENT
+        function startGPS() { navigator.geolocation.watchPosition(p => { const d = getDist(p.coords.latitude, p.coords.longitude); document.getElementById('live-range').innerText = Math.round(d) + "m"; document.getElementById('live-range').className = d < rangeLimit ? "text-xl font-bold text-iosgreen" : "text-xl font-bold text-iosred"; }, null, {enableHighAccuracy: true}); }
+        window.checkSession = async () => { const q = query(collection(db, "sessions"), where("active", "==", true)); const snap = await getDocs(q); let found = false; for(const d of snap.docs) { if(d.data().end.toDate() > new Date()) { found = true; activeSessId = d.id; activePin = d.data().pin; activeSubject = d.data().sub; const subSnap = await getDocs(query(collection(db, "submissions"), where("sessId", "==", d.id), where("sid", "==", auth.currentUser.uid))); if(!subSnap.empty) { document.getElementById('active-class-ui').classList.add('hidden'); document.getElementById('done-class-ui').classList.remove('hidden'); } else { document.getElementById('active-class-ui').classList.remove('hidden'); document.getElementById('done-class-ui').classList.add('hidden'); } document.getElementById('no-class-ui').classList.add('hidden'); document.getElementById('session-subject').innerText = d.data().sub; break; } } if(!found) { document.getElementById('active-class-ui').classList.add('hidden'); document.getElementById('done-class-ui').classList.add('hidden'); document.getElementById('no-class-ui').classList.remove('hidden'); } };
+        window.verifyAndMark = () => { const btn = document.getElementById('markBtn'); if(btn.innerText.includes("Selfie")) { document.getElementById('cam').click(); return; } if(document.getElementById('pin-input').value !== activePin) return showToast("Wrong PIN", 'error'); btn.innerText = "Checking..."; btn.disabled = true; navigator.geolocation.getCurrentPosition(async (p) => { const d = getDist(p.coords.latitude, p.coords.longitude); if(d > rangeLimit) { btn.innerText = "Verify Location"; btn.disabled = false; return showToast(`Too far (${Math.round(d)}m)`, 'error'); } const localID = getUUID(); if(currentUserData.registered_device_id && currentUserData.registered_device_id !== localID) { showToast("⛔ Device Mismatch!", 'error'); setTimeout(() => location.reload(), 2000); return; } btn.innerText = "📸 Take Selfie"; btn.style.backgroundColor = "#30d158"; btn.disabled = false; }, () => { showToast("Enable GPS", 'error'); btn.innerText = "Verify Location"; btn.disabled = false; }); };
+        window.uploadPhoto = () => { const f = document.getElementById('cam').files[0]; if(!f) return; document.getElementById('markBtn').innerText = "Uploading..."; const r = new FileReader(); r.readAsDataURL(f); r.onload = (e) => { const img = new Image(); img.src = e.target.result; img.onload = () => { const c = document.getElementById('cvs'), x = c.getContext('2d'); const s = 300/img.width; c.width=300; c.height=img.height*s; x.drawImage(img,0,0,300,c.height); submit(c.toDataURL('image/jpeg', 0.5)); }; }; };
+        async function submit(b64) { await addDoc(collection(db, "submissions"), { sid: auth.currentUser.uid, name: currentUserData.name, roll: currentUserData.roll, sessId: activeSessId, subName: activeSubject, photo: b64, time: new Date() }); showToast("Marked!", 'success'); setTimeout(() => location.reload(), 1500); }
+        window.switchStudentTab = (t) => { document.getElementById('st-view-active').classList.toggle('hidden', t!=='active'); document.getElementById('st-view-history').classList.toggle('hidden', t!=='history'); document.getElementById('seg-st-active').className = t==='active'?"segment-btn active":"segment-btn"; document.getElementById('seg-st-history').className = t==='history'?"segment-btn active":"segment-btn"; };
+        function getDist(lat1, lon1) { const lat2 = 21.126222, lon2 = 79.115222; const R = 6371e3; const a = Math.sin((lat2-lat1)*Math.PI/360)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin((lon2-lon1)*Math.PI/360)**2; return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); }
     </script>
 </body>
 </html>
