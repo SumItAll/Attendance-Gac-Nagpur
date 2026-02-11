@@ -81,14 +81,14 @@
         #map { height: 250px; width: 100%; border-radius: 16px; z-index: 0; filter: grayscale(100%) invert(100%); }
     </style>
 </head>
-<body class="flex justify-center min-h-screen">
+<body class="flex items-center justify-center min-h-screen relative w-full">
 
     <svg class="bg-icon icon-leaf" viewBox="0 0 24 24" fill="currentColor"><path d="M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22l1-2.3A4.49,4.49 0 0,0 8,20C19,20 22,3 22,3C21,5 14,5.25 9,6.25C4,7.25 2,11.5 2,13.5C2,15.5 3.75,17.25 3.75,17.25C7,8 17,8 17,8Z"/></svg>
     <svg class="bg-icon icon-chakra" viewBox="0 0 24 24" fill="currentColor"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z"/></svg>
     
     <div id="toast-container"></div>
 
-    <div class="w-full max-w-md p-4 flex flex-col h-screen overflow-hidden relative z-10">
+    <div class="w-full max-w-md h-screen max-h-[900px] p-4 flex flex-col relative z-10 mx-auto">
 
         <div id="auth-screen" class="flex-1 flex flex-col justify-center p-2">
             <div class="text-center mb-8">
@@ -182,6 +182,10 @@
 
                 <div id="ad-tab-geo" class="hidden flex-1 flex flex-col p-4 overflow-y-auto">
                     <div id="map" class="mb-4 border border-white/10"></div>
+                    <div class="flex justify-between text-xs font-bold text-sub mb-2 uppercase">
+                        <span>Radius Control</span>
+                        <span id="radius-val">50m</span>
+                    </div>
                     <input type="range" id="radius-slider" min="20" max="500" value="50" step="10" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer mb-6" oninput="updateCircleRadius()">
                     <button onclick="saveGeoConfig()" class="w-full bg-iosblue text-white py-3 rounded-xl font-bold">Save Geofence</button>
                 </div>
@@ -492,7 +496,7 @@
         };
         window.toggleBan = async (uid, status) => { await updateDoc(doc(db, "users", uid), { banned: !status }); loadStudentList('all'); };
 
-        // --- MAP ---
+        // --- MAP & GEOFENCE FIX ---
         window.initMap = () => {
             if(mapInstance) return;
             setTimeout(() => {
@@ -502,8 +506,20 @@
                 L.marker([collegeLat, collegeLng], {draggable: true}).addTo(mapInstance).on('dragend', (e) => {
                     const ll = e.target.getLatLng(); collegeLat = ll.lat; collegeLng = ll.lng; mapCircle.setLatLng(ll);
                 });
+                // Set initial value for slider text
+                document.getElementById('radius-val').innerText = rangeLimit + "m";
+                document.getElementById('radius-slider').value = rangeLimit;
             }, 500);
         };
+        
+        // MOVED TO GLOBAL SCOPE FOR HTML ACCESS
+        window.updateCircleRadius = () => {
+            const val = parseInt(document.getElementById('radius-slider').value);
+            rangeLimit = val;
+            document.getElementById('radius-val').innerText = val + "m";
+            if(mapCircle) mapCircle.setRadius(val);
+        };
+        
         window.saveGeoConfig = async () => { await setDoc(doc(db, "settings", "config"), { allowedRange: rangeLimit, lat: collegeLat, lng: collegeLng }, {merge:true}); showToast("Geofence Updated", 'success'); };
 
         // --- TEACHER FUNCTIONS ---
