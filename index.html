@@ -234,6 +234,7 @@
                         <button onclick="startClass()" class="flex-1 bg-iosblue text-white font-bold rounded-xl text-sm active:scale-95 transition">Start Session</button>
                     </div>
                 </div>
+                
                 <div id="active-ui" class="hidden text-center py-2">
                     <div class="flex justify-between items-start mb-2">
                         <div class="text-left">
@@ -269,7 +270,7 @@
                 
                 <div id="view-list" class="hidden flex-1 flex flex-col px-4 pb-4">
                     <div class="flex gap-2 mb-3">
-                        <button onclick="calcAnalytics()" class="ios-input px-3 py-2 text-xs flex-1 font-bold">🔄 Refresh</button>
+                        <button onclick="calcAnalytics()" class="ios-input px-3 py-2 text-xs flex-1 font-bold">🔄 Load Full List</button>
                         <button onclick="exportCSV()" class="ios-input px-3 py-2 text-xs flex-1 font-bold text-iosgreen">📥 Export CSV</button>
                     </div>
                     
@@ -278,7 +279,9 @@
                             <thead class="text-iossub font-semibold border-b border-gray-300 dark:border-white/5 sticky top-0 bg-gray-200 dark:bg-[#1c1c1e] z-10">
                                 <tr><th class="p-3">Roll</th><th class="p-3">Name</th><th class="p-3 text-right">Attendance</th></tr>
                             </thead>
-                            <tbody id="analytics-body" class="divide-y divide-gray-300 dark:divide-white/5"></tbody>
+                            <tbody id="analytics-body" class="divide-y divide-gray-300 dark:divide-white/5">
+                                <tr><td colspan="3" class="p-4 text-center text-iossub">Click 'Load Full List' to view details</td></tr>
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -317,6 +320,8 @@
         let activeSessId=null, activePin=null, activeSubject="";
         let analyticsData=[], mapInstance=null, mapCircle=null;
         let liveCountListener = null;
+        let studentHistoryCache = null; // OPTIMIZATION: Cache student history
+        let teacherDataLoaded = false;  // OPTIMIZATION: Prevent auto-load
 
         // --- UTILS ---
         window.toggleTheme = () => { document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); };
@@ -563,7 +568,7 @@
 
         // --- TEACHER ANALYTICS & STUDENT HISTORY ---
         window.calcAnalytics = async () => {
-            const btn = document.querySelector("button[onclick='calcAnalytics()']"); btn.innerText = "...";
+            const btn = document.querySelector("button[onclick='calcAnalytics()']"); btn.innerText = "Loading...";
             const sessQ = query(collection(db, "sessions"), where("tid", "==", auth.currentUser.uid));
             const sessSnap = await getDocs(sessQ);
             const sessionIds = sessSnap.docs.map(d => d.id);
@@ -584,6 +589,8 @@
             analyticsData = Object.values(students).sort((a,b) => parseInt(a.roll) - parseInt(b.roll));
             const tbody = document.getElementById('analytics-body'); tbody.innerHTML = "";
             
+            if(analyticsData.length === 0) tbody.innerHTML = "<tr><td colspan='3' class='p-4 text-center'>No records found.</td></tr>";
+
             analyticsData.forEach(st => {
                 const pct = Math.round((st.count / totalClasses) * 100);
                 const color = pct < 75 ? "text-iosred" : "text-iosgreen";
@@ -595,7 +602,7 @@
                     <td class="p-3 text-right font-bold ${color}">${pct}%</td>
                 </tr>`;
             });
-            btn.innerText = "🔄 Refresh";
+            btn.innerText = "🔄 Load Full List";
         };
 
         window.showStudentHistory = async (uid, name) => {
@@ -603,16 +610,13 @@
             document.getElementById('modal-title').innerText = `${name} History`;
             const b = document.getElementById('modal-body'); b.innerHTML = "Loading...";
             
-            // Get all sessions by this teacher
             const sessQ = query(collection(db, "sessions"), where("tid", "==", auth.currentUser.uid));
             const sessSnap = await getDocs(sessQ);
             const mySessIds = sessSnap.docs.map(d => d.id);
 
-            // Get all submissions by this student
             const q = query(collection(db, "submissions"), where("sid", "==", uid));
             const snap = await getDocs(q);
             
-            // Filter locally (Firebase limit workaround)
             const mySubs = snap.docs.filter(d => mySessIds.includes(d.data().sessId)).map(d => d.data());
             
             b.innerHTML = "";
@@ -628,13 +632,11 @@
         };
 
         window.exportCSV = () => {
-            if(analyticsData.length === 0) return showToast("No data to export", 'error');
+            if(analyticsData.length === 0) return showToast("Load List First", 'error');
             let csv = "Roll,Name,Percentage\n";
             analyticsData.forEach(r => {
-                const pct = Math.round((r.count / window.totalClasses || 1) * 100); // Re-calculate or use stored
-                // Note: accurate calc requires storing totalClasses globally or recalculating. 
-                // For simplicity here, just exporting names.
-                csv += `${r.roll},${r.name},--%\n`; 
+                const pct = Math.round((r.count / window.totalClasses || 1) * 100); 
+                csv += `${r.roll},${r.name},${pct}%\n`; 
             });
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
@@ -648,7 +650,7 @@
             document.getElementById('seg-list').className = t==='list'?"segment-btn active":"segment-btn";
         };
 
-        // --- STUDENT GPS ---
+        // --- STUDENT GPS & CACHE OPTIMIZATION ---
         function startGPS() {
             navigator.geolocation.watchPosition(p => {
                 const d = getDist(p.coords.latitude, p.coords.longitude);
@@ -664,6 +666,7 @@
             for(const d of snap.docs) {
                 if(d.data().end.toDate() > new Date()) {
                     found = true; activeSessId = d.id; activePin = d.data().pin; activeSubject = d.data().sub;
+                    // OPTIMIZATION: Check cache first if available, else DB
                     const subQ = query(collection(db, "submissions"), where("sessId", "==", d.id), where("sid", "==", auth.currentUser.uid));
                     const subSnap = await getDocs(subQ);
                     document.getElementById('active-class-ui').classList.toggle('hidden', !subSnap.empty);
@@ -686,7 +689,8 @@
                 if(d > rangeLimit) { btn.innerText = "Mark Present"; btn.disabled = false; return showToast(`Too far (${Math.round(d)}m)`, 'error'); }
                 
                 await addDoc(collection(db, "submissions"), { sid: auth.currentUser.uid, name: userName, roll: userRoll, sessId: activeSessId, subName: activeSubject, time: new Date() });
-                showToast("Marked Present!", 'success'); 
+                showToast("Marked Present!", 'success');
+                studentHistoryCache = null; // Clear cache to force refresh
                 checkSession();
             });
         };
@@ -695,10 +699,24 @@
         
         window.loadStudentHistory = async () => {
             const list = document.getElementById('st-history-list'); list.innerHTML = "Loading...";
+            
+            // OPTIMIZATION: Use Cache
+            if(studentHistoryCache) {
+                renderStudentHistory(studentHistoryCache);
+                return;
+            }
+
             const q = query(collection(db, "submissions"), where("sid", "==", auth.currentUser.uid));
-            const snap = await getDocs(q); list.innerHTML = "";
-            snap.forEach(d => { const r = d.data(); list.innerHTML += `<div class="bg-gray-100 dark:bg-white/5 p-3 rounded-lg flex justify-between"><p class="font-bold">${r.subName || 'Class'}</p><p class="text-xs text-iossub">${r.time.toDate().toLocaleDateString()}</p></div>`; });
+            const snap = await getDocs(q); 
+            studentHistoryCache = snap.docs.map(d => d.data()); // Save to cache
+            renderStudentHistory(studentHistoryCache);
         };
+
+        function renderStudentHistory(data) {
+            const list = document.getElementById('st-history-list'); list.innerHTML = "";
+            data.sort((a,b) => b.time - a.time);
+            data.forEach(r => { list.innerHTML += `<div class="bg-gray-100 dark:bg-white/5 p-3 rounded-lg flex justify-between"><p class="font-bold">${r.subName || 'Class'}</p><p class="text-xs text-iossub">${r.time.toDate().toLocaleDateString()}</p></div>`; });
+        }
 
         function getDist(lat1, lon1) { 
             const R = 6371e3; const φ1 = lat1 * Math.PI/180, φ2 = collegeLat * Math.PI/180; 
